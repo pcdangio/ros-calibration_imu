@@ -8,11 +8,13 @@ INCLUDEPATH += \
     ../../devel/include
 
 SOURCES += \
+        src/magnetometer.cpp \
         src/main.cpp \
         src/fmain.cpp
 
 HEADERS += \
-        src/fmain.h
+        src/fmain.h \
+        src/magnetometer.h
 
 FORMS += \
         src/fmain.ui

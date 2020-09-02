@@ -137,7 +137,8 @@ include_directories(
 # Declare a C++ executable
 # With catkin_make all packages are built within a single CMake context
 # The recommended prefix ensures that target names across packages don't collide
- add_executable(calibration_imu src/fmain.cpp src/fmain.ui src/main.cpp)
+file(GLOB cpp_files src/*.cpp)
+ add_executable(calibration_imu src/fmain.ui ${cpp_files})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
