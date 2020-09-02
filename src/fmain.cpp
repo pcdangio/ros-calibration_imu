@@ -11,7 +11,8 @@ fmain::fmain(QWidget *parent)
     fmain::m_node = new ros::NodeHandle("~");
 
     // Set up subscribers.
-    fmain::m_subscriber_magnetometer = fmain::m_node->subscribe("imu/magnetometer", 100, &fmain::subscriber_magnetometer, this);
+    ros::NodeHandle public_handle;
+    fmain::m_subscriber_magnetometer = public_handle.subscribe("imu/magnetometer", 100, &fmain::subscriber_magnetometer, this);
 
     // Start ros spinner.
     connect(&(fmain::m_ros_spinner), &QTimer::timeout, this, &fmain::ros_spin);
