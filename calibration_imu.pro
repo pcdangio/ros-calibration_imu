@@ -1,4 +1,4 @@
-QT += core gui widgets
+QT += core gui widgets charts
 
 TARGET = calibration_imu
 TEMPLATE = app

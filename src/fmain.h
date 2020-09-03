@@ -20,9 +20,13 @@ public:
     ~fmain();
 
 private slots:
-    void on_button_enable_magnetometer_clicked();
 
-    void on_button_disable_magnetometer_clicked();
+
+    void on_button_magnetometer_start_collection_clicked();
+
+    void on_button_magnetometer_stop_collection_clicked();
+
+    void on_combobox_magnetometer_charts_currentIndexChanged(int index);
 
 private:
     Ui::fmain *ui;

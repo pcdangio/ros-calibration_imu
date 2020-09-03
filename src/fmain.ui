@@ -14,8 +14,8 @@
    <string>fmain</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
      <widget class="QTabWidget" name="tabs">
       <property name="currentIndex">
        <number>2</number>
@@ -34,38 +34,73 @@
        <attribute name="title">
         <string>Magnetometer</string>
        </attribute>
-       <widget class="QPushButton" name="button_enable_magnetometer">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>10</y>
-          <width>89</width>
-          <height>25</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Enable</string>
-        </property>
-       </widget>
-       <widget class="QPushButton" name="button_disable_magnetometer">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>10</y>
-          <width>89</width>
-          <height>25</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Disable</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="minimumSize">
+           <size>
+            <width>300</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="title">
+           <string>Calibration</string>
+          </property>
+          <widget class="QPushButton" name="button_magnetometer_start_collection">
+           <property name="geometry">
+            <rect>
+             <x>10</x>
+             <y>30</y>
+             <width>89</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Start</string>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="button_magnetometer_stop_collection">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>30</y>
+             <width>89</width>
+             <height>25</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Stop</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="combobox_magnetometer_charts">
+           <property name="geometry">
+            <rect>
+             <x>170</x>
+             <y>60</y>
+             <width>121</width>
+             <height>25</height>
+            </rect>
+           </property>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <widget class="QChartView" name="chart_magnetometer_calibrate"/>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
    </layout>
   </widget>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header>QtCharts</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

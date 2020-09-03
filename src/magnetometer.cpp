@@ -2,92 +2,305 @@
 
 magnetometer::magnetometer()
 {
-    // Initialize flags.
-    magnetometer::f_enabled = false;
-
     // Read parameters.
     ros::NodeHandle private_handle("~");
-    // Force cell count to be even.
-    uint32_t p_cell_count = std::floor(private_handle.param<double>("magnetometer_cell_count", 20) / 2.0) * 2.0;
-    magnetometer::p_cell_pitch = 2*M_PI / static_cast<double>(p_cell_count);
-    magnetometer::p_cell_population = private_handle.param<int32_t>("magnetometer_cell_population", 3);
+    magnetometer::p_max_data_rate = private_handle.param<double>("max_data_rate", 10.0);
 
-    // Set up cell 3D vector.
-    magnetometer::m_cells.resize(p_cell_count);
-    for(uint32_t i = 0; i < p_cell_count; ++i)
-    {
-        magnetometer::m_cells[i].resize(p_cell_count);
-        for(uint32_t j = 0; j < p_cell_count; ++j)
-        {
-            magnetometer::m_cells[i][j].resize(p_cell_count, 0);
-        }
-    }
+    // Initialize state.
+    magnetometer::m_state = magnetometer::state_t::IDLE;
+
+    // Initialize charts.
+    magnetometer::initialize_charts();
 }
 magnetometer::~magnetometer()
 {
-    // Disable the calibrator.
-    magnetometer::disable();
+    // Cancel any running states.
+    switch(magnetometer::m_state)
+    {
+    case magnetometer::state_t::IDLE:
+    {
+        break;
+    }
+    case magnetometer::state_t::STEP_COLLECT:
+    {
+        magnetometer::stop_collection();
+        break;
+    }
+    }
 }
 
-void magnetometer::enable()
+QtCharts::QChart* magnetometer::get_chart(chart_t chart)
 {
-    if(!magnetometer::f_enabled)
+    return magnetometer::m_charts[chart];
+}
+
+void magnetometer::start_collection()
+{
+    if(magnetometer::m_state == magnetometer::state_t::IDLE)
     {
+        // Reset data point collection.
+        magnetometer::m_points.clear();
+
+        // Enable point timer.
+        magnetometer::m_point_timer.start();
+
         // Subscribe to magnetometer data stream.
         ros::NodeHandle public_handle;
         magnetometer::m_subscriber = public_handle.subscribe("/imu/magnetometer", 100, &magnetometer::subscriber, this);
 
-        // Update flag.
-        magnetometer::f_enabled = true;
+        // Update state.
+        magnetometer::m_state = magnetometer::state_t::STEP_COLLECT;
     }
 }
-void magnetometer::disable()
+void magnetometer::stop_collection()
 {
-    if(magnetometer::f_enabled)
+    if(magnetometer::m_state == magnetometer::state_t::STEP_COLLECT)
     {
         // Close down subscriber.
         magnetometer::m_subscriber.shutdown();
 
-        // Update flag.
-        magnetometer::f_enabled = false;
+        // Stop point timer.
+        magnetometer::m_point_timer.invalidate();
+
+        // Update state.
+        magnetometer::m_state = magnetometer::state_t::IDLE;
+    }
+}
+
+void magnetometer::initialize_charts()
+{
+    // Clear any existing charts.
+    magnetometer::clear_charts();
+
+    // Create a new chart for each of the 6 views.
+    for(uint32_t i = 0; i < 3; ++i)
+    {
+        // Create chart.
+        QtCharts::QChart* chart = new QtCharts::QChart();
+        chart->legend()->hide();
+
+        // Create collection series.
+        QtCharts::QScatterSeries* series_collection = new QtCharts::QScatterSeries();
+        series_collection->setColor(QColor(Qt::GlobalColor::blue));
+        series_collection->setBorderColor(Qt::GlobalColor::transparent);
+        series_collection->setMarkerSize(5);
+        chart->addSeries(series_collection);
+        // Create current position series.
+        QtCharts::QScatterSeries* series_current_postion = new QtCharts::QScatterSeries();
+        series_current_postion->setColor(QColor(Qt::GlobalColor::red));
+        chart->addSeries(series_current_postion);
+
+        // Set up axes.
+        QtCharts::QValueAxis* axis_x = new QtCharts::QValueAxis();
+        axis_x->setLabelFormat("%.2E");
+        chart->addAxis(axis_x, Qt::AlignBottom);
+        series_collection->attachAxis(axis_x);
+        series_current_postion->attachAxis(axis_x);
+        QtCharts::QValueAxis* axis_y = new QtCharts::QValueAxis();
+        axis_y->setLabelFormat("%.2E");
+        chart->addAxis(axis_y, Qt::AlignLeft);
+        series_collection->attachAxis(axis_y);
+        series_current_postion->attachAxis(axis_y);
+
+        // Store chart and series.
+        magnetometer::chart_t chart_type = static_cast<magnetometer::chart_t>(i);
+        magnetometer::m_charts[chart_type] = chart;
+        magnetometer::m_axes_x[chart_type] = axis_x;
+        magnetometer::m_axes_y[chart_type] = axis_y;
+        magnetometer::m_series_collections[chart_type] = series_collection;
+        magnetometer::m_series_current_position[chart_type] = series_current_postion;
+    }
+
+    // Set plot specific settings.
+    // XY
+    magnetometer::m_axes_x[magnetometer::chart_t::XY]->setTitleText("x");
+    magnetometer::m_axes_y[magnetometer::chart_t::XY]->setTitleText("y");
+    // XZ
+    magnetometer::m_axes_x[magnetometer::chart_t::XZ]->setTitleText("x");
+    magnetometer::m_axes_y[magnetometer::chart_t::XZ]->setTitleText("z");
+    // YZ
+    magnetometer::m_axes_x[magnetometer::chart_t::YZ]->setTitleText("y");
+    magnetometer::m_axes_y[magnetometer::chart_t::YZ]->setTitleText("z");
+
+}
+void magnetometer::clear_charts()
+{
+    // Clean up charts. NOTE: The charts have ownership of all included pointers.
+    for(uint32_t i = 0; i < 3; ++i)
+    {
+        magnetometer::chart_t chart_type = static_cast<magnetometer::chart_t>(i);
+        if(magnetometer::m_charts.count(chart_type))
+        {
+            delete magnetometer::m_charts[chart_type];
+        }
+    }
+
+    // Clear out chart vectors.
+    magnetometer::m_charts.clear();
+    magnetometer::m_axes_x.clear();
+    magnetometer::m_axes_y.clear();
+    magnetometer::m_series_collections.clear();
+    magnetometer::m_series_current_position.clear();
+}
+void magnetometer::update_charts()
+{
+    // Iterate through all points to set up xy, xz, and yz vectors.
+    QVector<QPointF> points_xy;
+    QVector<QPointF> points_xz;
+    QVector<QPointF> points_yz;
+    double x_min = std::numeric_limits<double>::max();
+    double x_max = -std::numeric_limits<double>::max();
+    double y_min = std::numeric_limits<double>::max();
+    double y_max = -std::numeric_limits<double>::max();
+    double z_min = std::numeric_limits<double>::max();
+    double z_max = -std::numeric_limits<double>::max();
+    for(auto point_entry = magnetometer::m_points.cbegin(); point_entry != magnetometer::m_points.cend(); ++point_entry)
+    {
+        magnetometer::point_t* point = *point_entry;
+
+        // Add points to vector.
+        points_xy.append(QPointF(point->x, point->y));
+        points_xz.append(QPointF(point->x, point->z));
+        points_yz.append(QPointF(point->y, point->z));
+
+        // Calculate data ranges.
+        // X
+        if(point->x < x_min)
+        {
+            x_min = point->x;
+        }
+        if(point->x > x_max)
+        {
+            x_max = point->x;
+        }
+        // Y
+        if(point->y < y_min)
+        {
+            y_min = point->y;
+        }
+        if(point->y > y_max)
+        {
+            y_max = point->y;
+        }
+        // Z
+        if(point->z < z_min)
+        {
+            z_min = point->z;
+        }
+        if(point->z > z_max)
+        {
+            z_max = point->z;
+        }
+    }
+
+    // Update collection series.
+    magnetometer::m_series_collections[magnetometer::chart_t::XY]->replace(points_xy);
+    magnetometer::m_series_collections[magnetometer::chart_t::XZ]->replace(points_xz);
+    magnetometer::m_series_collections[magnetometer::chart_t::YZ]->replace(points_yz);
+
+    // Update current point series.
+    if(!magnetometer::m_points.empty())
+    {
+        // Create vectors.
+        QVector<QPointF> points_xy_current;
+        QVector<QPointF> points_xz_current;
+        QVector<QPointF> points_yz_current;
+        // Populate vectors.
+        auto current_point = magnetometer::m_points.back();
+        points_xy_current.append(QPointF(current_point->x, current_point->y));
+        points_xz_current.append(QPointF(current_point->x, current_point->z));
+        points_yz_current.append(QPointF(current_point->y, current_point->z));
+        // Add vectors to series.
+        magnetometer::m_series_current_position[magnetometer::chart_t::XY]->replace(points_xy_current);
+        magnetometer::m_series_current_position[magnetometer::chart_t::XZ]->replace(points_xz_current);
+        magnetometer::m_series_current_position[magnetometer::chart_t::YZ]->replace(points_yz_current);
+    }
+
+    // Update scale.
+    // Determine the center of the plot ranges.
+    double x_avg = (x_min + x_max) / 2.0;
+    double y_avg = (y_min + y_max) / 2.0;
+    double z_avg = (z_min + z_max) / 2.0;
+    // Iterate over charts.
+    for(uint32_t i = 0; i < 3; ++i)
+    {
+        magnetometer::chart_t chart_type = static_cast<magnetometer::chart_t>(i);
+
+        // Get the chart's current plot area size to figure out aspect ratio.
+        QRectF plot_area = magnetometer::m_charts[chart_type]->plotArea();
+        double aspect_ratio = plot_area.width() / plot_area.height();
+        // Calculate ranges based on aspect ratio.
+        double xh_min, xh_max, xh_avg, xh_range;
+        double yh_min, yh_max, yh_avg, yh_range;
+        switch(chart_type)
+        {
+            case magnetometer::chart_t::XY:
+            {
+                xh_min = x_min;
+                xh_max = x_max;
+                yh_min = y_min;
+                yh_max = y_max;
+                xh_avg = x_avg;
+                yh_avg = y_avg;
+                break;
+            }
+            case magnetometer::chart_t::XZ:
+            {
+                xh_min = x_min;
+                xh_max = x_max;
+                yh_min = z_min;
+                yh_max = z_max;
+                xh_avg = x_avg;
+                yh_avg = z_avg;
+                break;
+            }
+            case magnetometer::chart_t::YZ:
+            {
+                xh_min = y_min;
+                xh_max = y_max;
+                yh_min = z_min;
+                yh_max = z_max;
+                xh_avg = y_avg;
+                yh_avg = z_avg;
+                break;
+            }
+        }
+
+        if(aspect_ratio > 1.0)
+        {
+            yh_range = (yh_max - yh_min) * 1.2;
+            xh_range = yh_range * aspect_ratio;
+        }
+        else
+        {
+            xh_range = (xh_max - xh_min) * 1.2;
+            yh_range = xh_range / aspect_ratio;
+        }
+        // Set axis ranges.
+        magnetometer::m_axes_x[chart_type]->setRange(xh_avg - xh_range/2.0, xh_avg + xh_range/2.0);
+        magnetometer::m_axes_y[chart_type]->setRange(yh_avg - yh_range/2.0, yh_avg + yh_range/2.0);
     }
 }
 
 // SUBSCRIBERS
 void magnetometer::subscriber(const sensor_msgs_ext::magnetometerConstPtr &message)
 {
-    // Convert message into new point instance.
-    point_t* point = new point_t();
-    point->x = message->x;
-    point->y = message->y;
-    point->z = message->z;
-
-    // Add point to calibration.
-    // NOTE: add_point will take ownership of the pointer.
-    magnetometer::add_point(point);
-}
-
-void magnetometer::add_point(point_t *point)
-{
-    // Before discriminating against the point via cell, check if it causes a center update.
-    if(point->x < magnetometer::m_x_center.min)
-
-    // Try to add point to cell count.
-    if(magnetometer::populate_cell(point))
+    // Enforce max data rate.
+    if(magnetometer::m_point_timer.elapsed() >= 1000.0/magnetometer::p_max_data_rate)
     {
-        // Point counted in cell.  Store in point deque.
+        // Reset point timer.
+        magnetometer::m_point_timer.restart();
+
+        // Convert message into new point instance.
+        point_t* point = new point_t();
+        point->x = message->x;
+        point->y = message->y;
+        point->z = message->z;
+
+        // Add point to calibration.
         magnetometer::m_points.push_back(point);
 
-        // Update center point if necessary.
-        magnetometer::update_center(point);
+        // Update charts.
+        magnetometer::update_charts();
     }
-    else
-    {
-        // Cell is already full. Discard point.
-        delete point;
-    }
-}
-bool magnetometer::populate_cell(const point_t *point)
-{
-
 }

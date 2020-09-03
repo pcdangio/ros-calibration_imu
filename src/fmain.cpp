@@ -16,6 +16,10 @@ fmain::fmain(QWidget *parent)
 
     // Set up magnetometer calibrator.
     fmain::m_magnetometer = new magnetometer();
+
+    // Set up magnetometer plot combobox.
+    fmain::ui->combobox_magnetometer_charts->addItems({"XY", "XZ", "YZ"});
+    fmain::ui->combobox_magnetometer_charts->setCurrentIndex(0);
 }
 
 fmain::~fmain()
@@ -43,12 +47,19 @@ void fmain::ros_spin()
     }
 }
 
-void fmain::on_button_enable_magnetometer_clicked()
+
+void fmain::on_button_magnetometer_start_collection_clicked()
 {
-    fmain::m_magnetometer->enable();
+    fmain::m_magnetometer->start_collection();
 }
 
-void fmain::on_button_disable_magnetometer_clicked()
+void fmain::on_button_magnetometer_stop_collection_clicked()
 {
-    fmain::m_magnetometer->disable();
+    fmain::m_magnetometer->stop_collection();
+}
+
+void fmain::on_combobox_magnetometer_charts_currentIndexChanged(int index)
+{
+    magnetometer::chart_t chart = static_cast<magnetometer::chart_t>(index);
+    fmain::ui->chart_magnetometer_calibrate->setChart(fmain::m_magnetometer->get_chart(chart));
 }

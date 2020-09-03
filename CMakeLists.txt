@@ -9,8 +9,7 @@ project(calibration_imu)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  sensor_msgs_ext
-)
+  sensor_msgs_ext)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -19,7 +18,9 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 REQUIRED COMPONENTS
+    Widgets
+    Charts)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -154,6 +155,7 @@ file(GLOB cpp_files src/*.cpp)
  target_link_libraries(calibration_imu
    ${catkin_LIBRARIES}
    Qt5::Widgets
+   Qt5::Charts
  )
 
 #############
