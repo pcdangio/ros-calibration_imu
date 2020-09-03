@@ -1,6 +1,7 @@
 #ifndef MAGNETOMETER_H
 #define MAGNETOMETER_H
 
+#include <QObject>
 #include <QtCharts/QChart>
 #include <QtCharts/QValueAxis>
 #include <QtCharts/QScatterSeries>
@@ -14,7 +15,9 @@
 #include <deque>
 
 class magnetometer
+        : public QObject
 {
+    Q_OBJECT
 public:
     magnetometer();
     ~magnetometer();
@@ -29,7 +32,13 @@ public:
 
     void start_collection();
     void stop_collection();
+    void clear_collection();
 
+    void start_fit();
+    void stop_fit();
+
+signals:
+    void collection_updated(uint32_t n_collection_points);
 
 private:
     double p_max_data_rate;
@@ -37,12 +46,7 @@ private:
     ros::Subscriber m_subscriber;
     void subscriber(const sensor_msgs_ext::magnetometerConstPtr& message);
 
-    enum class state_t
-    {
-        IDLE = 0,
-        STEP_COLLECT = 1
-    };
-    state_t m_state;
+    bool f_is_collecting;
 
     struct point_t
     {

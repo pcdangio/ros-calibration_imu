@@ -16,6 +16,7 @@ fmain::fmain(QWidget *parent)
 
     // Set up magnetometer calibrator.
     fmain::m_magnetometer = new magnetometer();
+    connect(fmain::m_magnetometer, &magnetometer::collection_updated, this, &fmain::magnetometer_collection_updated);
 
     // Set up magnetometer plot combobox.
     fmain::ui->combobox_magnetometer_charts->addItems({"XY", "XZ", "YZ"});
@@ -60,6 +61,20 @@ void fmain::on_button_magnetometer_stop_collection_clicked()
 
 void fmain::on_combobox_magnetometer_charts_currentIndexChanged(int index)
 {
-    magnetometer::chart_t chart = static_cast<magnetometer::chart_t>(index);
-    fmain::ui->chart_magnetometer_calibrate->setChart(fmain::m_magnetometer->get_chart(chart));
+    magnetometer::chart_t chart_type = static_cast<magnetometer::chart_t>(index);
+    auto chart = fmain::m_magnetometer->get_chart(chart_type);
+    if(chart)
+    {
+        fmain::ui->chart_magnetometer_calibrate->setChart(chart);
+    }
+}
+
+void fmain::on_button_magnetometer_clear_collection_clicked()
+{
+    fmain::m_magnetometer->clear_collection();
+}
+
+void fmain::magnetometer_collection_updated(uint32_t n_collection_points)
+{
+    fmain::ui->lineedit_magnetometer_n_collection_points->setText(QString::number(n_collection_points));
 }

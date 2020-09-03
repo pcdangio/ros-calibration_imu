@@ -28,6 +28,10 @@ private slots:
 
     void on_combobox_magnetometer_charts_currentIndexChanged(int index);
 
+    void on_button_magnetometer_clear_collection_clicked();
+
+    void magnetometer_collection_updated(uint32_t n_collection_points);
+
 private:
     Ui::fmain *ui;
 

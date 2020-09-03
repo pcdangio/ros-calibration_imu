@@ -6,41 +6,40 @@ magnetometer::magnetometer()
     ros::NodeHandle private_handle("~");
     magnetometer::p_max_data_rate = private_handle.param<double>("max_data_rate", 10.0);
 
-    // Initialize state.
-    magnetometer::m_state = magnetometer::state_t::IDLE;
+    // Initialize states.
+    magnetometer::f_is_collecting = false;
 
     // Initialize charts.
     magnetometer::initialize_charts();
 }
 magnetometer::~magnetometer()
 {
-    // Cancel any running states.
-    switch(magnetometer::m_state)
-    {
-    case magnetometer::state_t::IDLE:
-    {
-        break;
-    }
-    case magnetometer::state_t::STEP_COLLECT:
-    {
-        magnetometer::stop_collection();
-        break;
-    }
-    }
+    // Cancel any running collection.
+    magnetometer::stop_collection();
+
+    // Clear any collection.
+    magnetometer::clear_collection();
+
+    // Clear charts.
+    magnetometer::clear_charts();
 }
 
 QtCharts::QChart* magnetometer::get_chart(chart_t chart)
 {
-    return magnetometer::m_charts[chart];
+    if(magnetometer::m_charts.count(chart))
+    {
+        return magnetometer::m_charts[chart];
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 void magnetometer::start_collection()
 {
-    if(magnetometer::m_state == magnetometer::state_t::IDLE)
+    if(!magnetometer::f_is_collecting)
     {
-        // Reset data point collection.
-        magnetometer::m_points.clear();
-
         // Enable point timer.
         magnetometer::m_point_timer.start();
 
@@ -49,12 +48,12 @@ void magnetometer::start_collection()
         magnetometer::m_subscriber = public_handle.subscribe("/imu/magnetometer", 100, &magnetometer::subscriber, this);
 
         // Update state.
-        magnetometer::m_state = magnetometer::state_t::STEP_COLLECT;
+        magnetometer::f_is_collecting = true;
     }
 }
 void magnetometer::stop_collection()
 {
-    if(magnetometer::m_state == magnetometer::state_t::STEP_COLLECT)
+    if(magnetometer::f_is_collecting)
     {
         // Close down subscriber.
         magnetometer::m_subscriber.shutdown();
@@ -63,8 +62,25 @@ void magnetometer::stop_collection()
         magnetometer::m_point_timer.invalidate();
 
         // Update state.
-        magnetometer::m_state = magnetometer::state_t::IDLE;
+        magnetometer::f_is_collecting = false;
     }
+}
+void magnetometer::clear_collection()
+{
+    // Clean up points.
+    for(auto point = magnetometer::m_points.cbegin(); point != magnetometer::m_points.cend(); ++point)
+    {
+        delete (*point);
+    }
+
+    // Clear deque.
+    magnetometer::m_points.clear();
+
+    // Update charts.
+    magnetometer::update_charts();
+
+    // Signal clear collection points.
+    emit collection_updated(0);
 }
 
 void magnetometer::initialize_charts()
@@ -215,70 +231,79 @@ void magnetometer::update_charts()
         magnetometer::m_series_current_position[magnetometer::chart_t::XZ]->replace(points_xz_current);
         magnetometer::m_series_current_position[magnetometer::chart_t::YZ]->replace(points_yz_current);
     }
+    else
+    {
+        magnetometer::m_series_current_position[magnetometer::chart_t::XY]->clear();
+        magnetometer::m_series_current_position[magnetometer::chart_t::XZ]->clear();
+        magnetometer::m_series_current_position[magnetometer::chart_t::YZ]->clear();
+    }
 
     // Update scale.
-    // Determine the center of the plot ranges.
-    double x_avg = (x_min + x_max) / 2.0;
-    double y_avg = (y_min + y_max) / 2.0;
-    double z_avg = (z_min + z_max) / 2.0;
-    // Iterate over charts.
-    for(uint32_t i = 0; i < 3; ++i)
+    if(!magnetometer::m_points.empty())
     {
-        magnetometer::chart_t chart_type = static_cast<magnetometer::chart_t>(i);
+        // Determine the center of the plot ranges.
+        double x_avg = (x_min + x_max) / 2.0;
+        double y_avg = (y_min + y_max) / 2.0;
+        double z_avg = (z_min + z_max) / 2.0;
+        // Iterate over charts.
+        for(uint32_t i = 0; i < 3; ++i)
+        {
+            magnetometer::chart_t chart_type = static_cast<magnetometer::chart_t>(i);
 
-        // Get the chart's current plot area size to figure out aspect ratio.
-        QRectF plot_area = magnetometer::m_charts[chart_type]->plotArea();
-        double aspect_ratio = plot_area.width() / plot_area.height();
-        // Calculate ranges based on aspect ratio.
-        double xh_min, xh_max, xh_avg, xh_range;
-        double yh_min, yh_max, yh_avg, yh_range;
-        switch(chart_type)
-        {
-            case magnetometer::chart_t::XY:
+            // Get the chart's current plot area size to figure out aspect ratio.
+            QRectF plot_area = magnetometer::m_charts[chart_type]->plotArea();
+            double aspect_ratio = plot_area.width() / plot_area.height();
+            // Calculate ranges based on aspect ratio.
+            double xh_min, xh_max, xh_avg, xh_range;
+            double yh_min, yh_max, yh_avg, yh_range;
+            switch(chart_type)
             {
-                xh_min = x_min;
-                xh_max = x_max;
-                yh_min = y_min;
-                yh_max = y_max;
-                xh_avg = x_avg;
-                yh_avg = y_avg;
-                break;
+                case magnetometer::chart_t::XY:
+                {
+                    xh_min = x_min;
+                    xh_max = x_max;
+                    yh_min = y_min;
+                    yh_max = y_max;
+                    xh_avg = x_avg;
+                    yh_avg = y_avg;
+                    break;
+                }
+                case magnetometer::chart_t::XZ:
+                {
+                    xh_min = x_min;
+                    xh_max = x_max;
+                    yh_min = z_min;
+                    yh_max = z_max;
+                    xh_avg = x_avg;
+                    yh_avg = z_avg;
+                    break;
+                }
+                case magnetometer::chart_t::YZ:
+                {
+                    xh_min = y_min;
+                    xh_max = y_max;
+                    yh_min = z_min;
+                    yh_max = z_max;
+                    xh_avg = y_avg;
+                    yh_avg = z_avg;
+                    break;
+                }
             }
-            case magnetometer::chart_t::XZ:
-            {
-                xh_min = x_min;
-                xh_max = x_max;
-                yh_min = z_min;
-                yh_max = z_max;
-                xh_avg = x_avg;
-                yh_avg = z_avg;
-                break;
-            }
-            case magnetometer::chart_t::YZ:
-            {
-                xh_min = y_min;
-                xh_max = y_max;
-                yh_min = z_min;
-                yh_max = z_max;
-                xh_avg = y_avg;
-                yh_avg = z_avg;
-                break;
-            }
-        }
 
-        if(aspect_ratio > 1.0)
-        {
-            yh_range = (yh_max - yh_min) * 1.2;
-            xh_range = yh_range * aspect_ratio;
+            if(aspect_ratio > 1.0)
+            {
+                yh_range = (yh_max - yh_min) * 1.2;
+                xh_range = yh_range * aspect_ratio;
+            }
+            else
+            {
+                xh_range = (xh_max - xh_min) * 1.2;
+                yh_range = xh_range / aspect_ratio;
+            }
+            // Set axis ranges.
+            magnetometer::m_axes_x[chart_type]->setRange(xh_avg - xh_range/2.0, xh_avg + xh_range/2.0);
+            magnetometer::m_axes_y[chart_type]->setRange(yh_avg - yh_range/2.0, yh_avg + yh_range/2.0);
         }
-        else
-        {
-            xh_range = (xh_max - xh_min) * 1.2;
-            yh_range = xh_range / aspect_ratio;
-        }
-        // Set axis ranges.
-        magnetometer::m_axes_x[chart_type]->setRange(xh_avg - xh_range/2.0, xh_avg + xh_range/2.0);
-        magnetometer::m_axes_y[chart_type]->setRange(yh_avg - yh_range/2.0, yh_avg + yh_range/2.0);
     }
 }
 
@@ -302,5 +327,8 @@ void magnetometer::subscriber(const sensor_msgs_ext::magnetometerConstPtr &messa
 
         // Update charts.
         magnetometer::update_charts();
+
+        // Signal new collection point.
+        emit magnetometer::collection_updated(magnetometer::m_points.size());
     }
 }
