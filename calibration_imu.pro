@@ -5,16 +5,15 @@ TEMPLATE = app
 
 INCLUDEPATH += \
     /opt/ros/melodic/include \
-    ../../devel/include
+    ../../devel/include \
+    ../qn_optimizer/include
 
 SOURCES += \
-        src/magnetometer.cpp \
         src/main.cpp \
         src/fmain.cpp
 
 HEADERS += \
-        src/fmain.h \
-        src/magnetometer.h
+        src/fmain.h
 
 FORMS += \
         src/fmain.ui

@@ -9,7 +9,8 @@ project(calibration_imu)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  sensor_msgs_ext)
+  sensor_msgs_ext
+  qn_optimizer)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -138,8 +139,7 @@ include_directories(
 # Declare a C++ executable
 # With catkin_make all packages are built within a single CMake context
 # The recommended prefix ensures that target names across packages don't collide
-file(GLOB cpp_files src/*.cpp)
- add_executable(calibration_imu src/fmain.ui ${cpp_files})
+add_executable(calibration_imu src/fmain.ui src/fmain.cpp src/main.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
