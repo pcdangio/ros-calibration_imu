@@ -14,7 +14,7 @@ fmain::fmain(QWidget *parent)
     fmain::p_max_data_rate = fmain::m_node->param<double>("max_data_rate", 10.0);
 
     // Set up optimizer.
-    fmain::m_optimizer_fit = new qn_optimizer(6, std::bind(&fmain::objective_fit, this, std::placeholders::_1), std::bind(&fmain::gradient_fit, this, std::placeholders::_1, std::placeholders::_2));
+    fmain::m_optimizer_fit = new qn_optimizer(9, std::bind(&fmain::objective_fit, this, std::placeholders::_1));
 
     // Initialize state.
     fmain::m_state = fmain::state_t::IDLE;
@@ -142,50 +142,54 @@ void fmain::start_fit()
     if(fmain::m_state == fmain::state_t::IDLE)
     {
         // Set up variable vector with initial guess.
+        // Use c = 0,0,0 and A = identity (ortho axes)
         Eigen::VectorXd fit;
-        fit.setZero(6);
-        // Use point mid as initial guess for xc, yc, zc.
-        // Use point range as initial guess for a,b,c.
-        double x_min = std::numeric_limits<double>::max();
-        double x_max = -std::numeric_limits<double>::max();
-        double y_min = std::numeric_limits<double>::max();
-        double y_max = -std::numeric_limits<double>::max();
-        double z_min = std::numeric_limits<double>::max();
-        double z_max = -std::numeric_limits<double>::max();
-        for(auto point_entry = fmain::m_points.cbegin(); point_entry != fmain::m_points.cend(); ++point_entry)
-        {
-            fmain::point_t* point = *point_entry;
-            if(point->x < x_min)
-            {
-                x_min = point->x;
-            }
-            if(point->x > x_max)
-            {
-                x_max = point->x;
-            }
-            if(point->y < y_min)
-            {
-                y_min = point->y;
-            }
-            if(point->y > y_max)
-            {
-                y_max = point->y;
-            }
-            if(point->z < z_min)
-            {
-                z_min = point->z;
-            }
-            if(point->z > z_max)
-            {
-                z_max = point->z;
-            }
-        }
-        fit(0) = (x_min + x_max) / 2.0;
-        fit(1) = (y_min + y_max) / 2.0;
-        fit(2) = (z_min + z_max) / 2.0;
-        fit(3) = x_max - x_min;
-        fit(4) = y_max - y_min;
-        fit(5) = z_max - z_min;
+        fit.setZero(9);
+        fit(3) = 1.0;
+        fit(6) = 1.0;
+        fit(8) = 1.0;
+//        // Use point mid as initial guess for xc, yc, zc.
+//        // Use point range as initial guess for a,b,c.
+//        double x_min = std::numeric_limits<double>::max();
+//        double x_max = -std::numeric_limits<double>::max();
+//        double y_min = std::numeric_limits<double>::max();
+//        double y_max = -std::numeric_limits<double>::max();
+//        double z_min = std::numeric_limits<double>::max();
+//        double z_max = -std::numeric_limits<double>::max();
+//        for(auto point_entry = fmain::m_points.cbegin(); point_entry != fmain::m_points.cend(); ++point_entry)
+//        {
+//            fmain::point_t* point = *point_entry;
+//            if(point->x < x_min)
+//            {
+//                x_min = point->x;
+//            }
+//            if(point->x > x_max)
+//            {
+//                x_max = point->x;
+//            }
+//            if(point->y < y_min)
+//            {
+//                y_min = point->y;
+//            }
+//            if(point->y > y_max)
+//            {
+//                y_max = point->y;
+//            }
+//            if(point->z < z_min)
+//            {
+//                z_min = point->z;
+//            }
+//            if(point->z > z_max)
+//            {
+//                z_max = point->z;
+//            }
+//        }
+//        fit(0) = (x_min + x_max) / 2.0;
+//        fit(1) = (y_min + y_max) / 2.0;
+//        fit(2) = (z_min + z_max) / 2.0;
+//        fit(3) = x_max - x_min;
+//        fit(4) = y_max - y_min;
+//        fit(5) = z_max - z_min;
 
         // Start the optimizer.
         fmain::m_optimizer_fit->p_max_iterations = 100;
@@ -461,61 +465,47 @@ void fmain::subscriber(const sensor_msgs_ext::magnetometerConstPtr &message)
 double fmain::objective_fit(const Eigen::VectorXd& variables)
 {
     // Calculate mean squared error of generalized ellipsoid function:
-    // (x-xc)^2/a + (y-yc)^2/b + (z-zc)^2/c = 1
+    // (x-c)' * A * (x-c) = 1
+    // d = (x-c)
+
+    // Create c vector.
+    fmain::m_c(0) = variables(0);
+    fmain::m_c(1) = variables(1);
+    fmain::m_c(2) = variables(2);
+
+    // Create A Matrix.
+    fmain::m_a(0,0) = variables(3);
+    fmain::m_a(0,1) = variables(4);
+    fmain::m_a(1,0) = variables(4);
+    fmain::m_a(0,2) = variables(5);
+    fmain::m_a(2,0) = variables(5);
+    fmain::m_a(1,1) = variables(6);
+    fmain::m_a(1,2) = variables(7);
+    fmain::m_a(2,1) = variables(7);
+    fmain::m_a(2,2) = variables(8);
 
     // Set up MSE to sum over all points.
     double mse = 0.0;
 
-    // Preallocate loop variables for speed.
-    fmain::point_t* point;
-    double actual;
-
     // Iterate over each point in the collection.
-    for(auto point_entry = fmain::m_points.cbegin(); point_entry != fmain::m_points.cend(); ++point_entry)
+    for(auto point = fmain::m_points.cbegin(); point != fmain::m_points.cend(); ++point)
     {
-        point = *point_entry;
-        // Calculate actual value of points with variables.
-        actual = std::pow((point->x - variables(0))/variables(3), 2.0) +
-                 std::pow((point->y - variables(1))/variables(4), 2.0) +
-                 std::pow((point->z - variables(2))/variables(5), 2.0);
+        // Calculate difference vector and its transpose.
+        fmain::m_d(0) = (*point)->x - fmain::m_c(0);
+        fmain::m_d(1) = (*point)->y - fmain::m_c(1);
+        fmain::m_d(2) = (*point)->z - fmain::m_c(2);
+        fmain::m_dt.noalias() = fmain::m_d.transpose();
+
+        // Calculate actual value.
+        fmain::m_t1.noalias() = fmain::m_dt * fmain::m_a;
+        fmain::m_t2.noalias() = fmain::m_t1 * fmain::m_d;
+
         // Calculate MSE and add to sum.
-        mse += std::pow(actual - 1.0, 2.0);
+        mse += std::pow(fmain::m_t2(0) - 1.0, 2.0);
     }
 
     // Return MSE.
     return mse;
-}
-void fmain::gradient_fit(const Eigen::VectorXd& operating_point, Eigen::VectorXd& gradient)
-{
-    // Initialize gradient to zero so it can be added up over sum.
-    gradient.setZero();
-
-    // Preallocate pointer.
-    fmain::point_t* point;
-    double actual;
-    double common;
-
-    // Iterate over all points.
-    for(auto point_entry = fmain::m_points.cbegin(); point_entry != fmain::m_points.cend(); ++point_entry)
-    {
-        point = *point_entry;
-
-        // Calculate actual value at the operating point.
-        actual = std::pow((point->x - operating_point(0))/operating_point(3), 2.0) +
-                 std::pow((point->y - operating_point(1))/operating_point(4), 2.0) +
-                 std::pow((point->z - operating_point(2))/operating_point(5), 2.0);
-
-        // Calculate 2*(actual-1.0)
-        common = 2.0*(actual - 1.0);
-
-        // Add in gradient calculations.
-        gradient(0) += common * (2.0 * (point->x - operating_point(0)))/std::pow(operating_point(3), 2.0);
-        gradient(1) += common * (2.0 * (point->y - operating_point(1)))/std::pow(operating_point(4), 2.0);
-        gradient(2) += common * (2.0 * (point->z - operating_point(2)))/std::pow(operating_point(5), 2.0);
-        gradient(3) += common * 2.0 * std::pow(point->x - operating_point(0), 2.0)/std::pow(operating_point(3), 3.0);
-        gradient(4) += common * 2.0 * std::pow(point->y - operating_point(1), 2.0)/std::pow(operating_point(4), 3.0);
-        gradient(5) += common * 2.0 * std::pow(point->z - operating_point(2), 2.0)/std::pow(operating_point(5), 3.0);
-    }
 }
 
 void fmain::on_button_start_fit_clicked()
