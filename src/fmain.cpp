@@ -13,24 +13,22 @@ fmain::fmain(QWidget *parent)
     // Read parameters.
     fmain::p_max_data_rate = fmain::m_node->param<double>("max_data_rate", 10.0);
 
-    // Start ros spinner.
-    connect(&(fmain::m_ros_spinner), &QTimer::timeout, this, &fmain::ros_spin);
-    fmain::m_ros_spinner.start(10);
+    // Set up optimizer.
+    fmain::m_optimizer_fit = new qn_optimizer(6, std::bind(&fmain::objective_fit, this, std::placeholders::_1), std::bind(&fmain::gradient_fit, this, std::placeholders::_1, std::placeholders::_2));
 
-
-
-    // Initialize states.
-    fmain::f_is_collecting = false;
+    // Initialize state.
+    fmain::m_state = fmain::state_t::IDLE;
 
     // Initialize charts.
     fmain::initialize_charts();
 
-    // Set up magnetometer calibrator.
-
-
     // Set up magnetometer plot combobox.
     fmain::ui->combobox_charts->addItems({"XY", "XZ", "YZ"});
     fmain::ui->combobox_charts->setCurrentIndex(0);
+
+    // Start ros spinner.
+    connect(&(fmain::m_ros_spinner), &QTimer::timeout, this, &fmain::ros_spin);
+    fmain::m_ros_spinner.start(10);
 }
 
 fmain::~fmain()
@@ -92,7 +90,7 @@ void fmain::on_button_clear_collection_clicked()
 
 void fmain::start_collection()
 {
-    if(!fmain::f_is_collecting)
+    if(fmain::m_state == fmain::state_t::IDLE)
     {
         // Enable point timer.
         fmain::m_point_timer.start();
@@ -102,12 +100,12 @@ void fmain::start_collection()
         fmain::m_subscriber = public_handle.subscribe("/imu/magnetometer", 100, &fmain::subscriber, this);
 
         // Update state.
-        fmain::f_is_collecting = true;
+        fmain::m_state = fmain::state_t::COLLECTION;
     }
 }
 void fmain::stop_collection()
 {
-    if(fmain::f_is_collecting)
+    if(fmain::m_state == fmain::state_t::COLLECTION)
     {
         // Close down subscriber.
         fmain::m_subscriber.shutdown();
@@ -116,25 +114,97 @@ void fmain::stop_collection()
         fmain::m_point_timer.invalidate();
 
         // Update state.
-        fmain::f_is_collecting = false;
+        fmain::m_state = fmain::state_t::IDLE;
     }
 }
 void fmain::clear_collection()
 {
+    if(fmain::m_state == fmain::state_t::IDLE || fmain::m_state == fmain::state_t::COLLECTION)
+    {
+        // Clear deque.
+        fmain::m_points.clear();
+
+        // Update charts.
+        fmain::update_charts();
+
+        // Clear form's point counter.
+        fmain::ui->lineedit_n_collection_points->setText(0);
+    }
     // Clean up points.
     for(auto point = fmain::m_points.cbegin(); point != fmain::m_points.cend(); ++point)
     {
         delete (*point);
     }
+}
 
-    // Clear deque.
-    fmain::m_points.clear();
+void fmain::start_fit()
+{
+    if(fmain::m_state == fmain::state_t::IDLE)
+    {
+        // Set up variable vector with initial guess.
+        Eigen::VectorXd fit;
+        fit.setZero(6);
+        // Use point mid as initial guess for xc, yc, zc.
+        // Use point range as initial guess for a,b,c.
+        double x_min = std::numeric_limits<double>::max();
+        double x_max = -std::numeric_limits<double>::max();
+        double y_min = std::numeric_limits<double>::max();
+        double y_max = -std::numeric_limits<double>::max();
+        double z_min = std::numeric_limits<double>::max();
+        double z_max = -std::numeric_limits<double>::max();
+        for(auto point_entry = fmain::m_points.cbegin(); point_entry != fmain::m_points.cend(); ++point_entry)
+        {
+            fmain::point_t* point = *point_entry;
+            if(point->x < x_min)
+            {
+                x_min = point->x;
+            }
+            if(point->x > x_max)
+            {
+                x_max = point->x;
+            }
+            if(point->y < y_min)
+            {
+                y_min = point->y;
+            }
+            if(point->y > y_max)
+            {
+                y_max = point->y;
+            }
+            if(point->z < z_min)
+            {
+                z_min = point->z;
+            }
+            if(point->z > z_max)
+            {
+                z_max = point->z;
+            }
+        }
+        fit(0) = (x_min + x_max) / 2.0;
+        fit(1) = (y_min + y_max) / 2.0;
+        fit(2) = (z_min + z_max) / 2.0;
+        fit(3) = x_max - x_min;
+        fit(4) = y_max - y_min;
+        fit(5) = z_max - z_min;
 
-    // Update charts.
-    fmain::update_charts();
+        // Start the optimizer.
+        fmain::m_optimizer_fit->p_max_iterations = 100;
+        fmain::m_optimizer_fit->p_max_step_iterations = 10;
+        fmain::m_optimizer_fit->p_initial_step_size = 0.001;
+        fmain::m_optimizer_fit->optimize(fit);
+        fmain::setWindowTitle(QString::number(fit(0)));
 
-    // Clear form's point counter.
-    fmain::ui->lineedit_n_collection_points->setText(0);
+        // Update state.
+        fmain::m_state = fmain::state_t::FIT;
+    }
+}
+void fmain::stop_fit()
+{
+    if(fmain::m_state == fmain::state_t::FIT)
+    {
+        // Update state.
+        fmain::m_state = fmain::state_t::IDLE;
+    }
 }
 
 void fmain::initialize_charts()
@@ -385,4 +455,70 @@ void fmain::subscriber(const sensor_msgs_ext::magnetometerConstPtr &message)
         // Update form's point counter.
         fmain::ui->lineedit_n_collection_points->setText(QString::number(fmain::m_points.size()));
     }
+}
+
+// OPTIMIZATION FUNCTIONS
+double fmain::objective_fit(const Eigen::VectorXd& variables)
+{
+    // Calculate mean squared error of generalized ellipsoid function:
+    // (x-xc)^2/a + (y-yc)^2/b + (z-zc)^2/c = 1
+
+    // Set up MSE to sum over all points.
+    double mse = 0.0;
+
+    // Preallocate loop variables for speed.
+    fmain::point_t* point;
+    double actual;
+
+    // Iterate over each point in the collection.
+    for(auto point_entry = fmain::m_points.cbegin(); point_entry != fmain::m_points.cend(); ++point_entry)
+    {
+        point = *point_entry;
+        // Calculate actual value of points with variables.
+        actual = std::pow((point->x - variables(0))/variables(3), 2.0) +
+                 std::pow((point->y - variables(1))/variables(4), 2.0) +
+                 std::pow((point->z - variables(2))/variables(5), 2.0);
+        // Calculate MSE and add to sum.
+        mse += std::pow(actual - 1.0, 2.0);
+    }
+
+    // Return MSE.
+    return mse;
+}
+void fmain::gradient_fit(const Eigen::VectorXd& operating_point, Eigen::VectorXd& gradient)
+{
+    // Initialize gradient to zero so it can be added up over sum.
+    gradient.setZero();
+
+    // Preallocate pointer.
+    fmain::point_t* point;
+    double actual;
+    double common;
+
+    // Iterate over all points.
+    for(auto point_entry = fmain::m_points.cbegin(); point_entry != fmain::m_points.cend(); ++point_entry)
+    {
+        point = *point_entry;
+
+        // Calculate actual value at the operating point.
+        actual = std::pow((point->x - operating_point(0))/operating_point(3), 2.0) +
+                 std::pow((point->y - operating_point(1))/operating_point(4), 2.0) +
+                 std::pow((point->z - operating_point(2))/operating_point(5), 2.0);
+
+        // Calculate 2*(actual-1.0)
+        common = 2.0*(actual - 1.0);
+
+        // Add in gradient calculations.
+        gradient(0) += common * (2.0 * (point->x - operating_point(0)))/std::pow(operating_point(3), 2.0);
+        gradient(1) += common * (2.0 * (point->y - operating_point(1)))/std::pow(operating_point(4), 2.0);
+        gradient(2) += common * (2.0 * (point->z - operating_point(2)))/std::pow(operating_point(5), 2.0);
+        gradient(3) += common * 2.0 * std::pow(point->x - operating_point(0), 2.0)/std::pow(operating_point(3), 3.0);
+        gradient(4) += common * 2.0 * std::pow(point->y - operating_point(1), 2.0)/std::pow(operating_point(4), 3.0);
+        gradient(5) += common * 2.0 * std::pow(point->z - operating_point(2), 2.0)/std::pow(operating_point(5), 3.0);
+    }
+}
+
+void fmain::on_button_start_fit_clicked()
+{
+    fmain::start_fit();
 }

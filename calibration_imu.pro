@@ -5,7 +5,8 @@ TEMPLATE = app
 
 INCLUDEPATH += \
     /opt/ros/melodic/include \
-    ../../devel/include
+    ../../devel/include \
+    ../qn_optimizer/include
 
 SOURCES += \
         src/main.cpp \

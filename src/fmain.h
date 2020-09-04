@@ -15,6 +15,7 @@ QT_END_NAMESPACE
 
 #include <ros/ros.h>
 #include <sensor_msgs_ext/magnetometer.h>
+#include <qn_optimizer/qn_optimizer.h>
 
 #include <map>
 #include <deque>
@@ -37,6 +38,8 @@ private slots:
     void on_combobox_charts_currentIndexChanged(int index);
 
     void on_button_clear_collection_clicked();
+
+    void on_button_start_fit_clicked();
 
 private:
     Ui::fmain *ui;
@@ -64,7 +67,14 @@ private:
     ros::Subscriber m_subscriber;
     void subscriber(const sensor_msgs_ext::magnetometerConstPtr& message);
 
-    bool f_is_collecting;
+    enum class state_t
+    {
+        IDLE = 0,
+        COLLECTION = 1,
+        FIT = 2,
+        TRANSFORM = 3
+    };
+    state_t m_state;
 
     struct point_t
     {
@@ -83,5 +93,9 @@ private:
     void initialize_charts();
     void clear_charts();
     void update_charts();
+
+    qn_optimizer* m_optimizer_fit;
+    double objective_fit(const Eigen::VectorXd& variables);
+    void gradient_fit(const Eigen::VectorXd& operating_point, Eigen::VectorXd& gradient);
 };
 #endif // FMAIN_H
