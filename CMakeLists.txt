@@ -122,7 +122,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  src
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -139,8 +139,8 @@ include_directories(
 # Declare a C++ executable
 # With catkin_make all packages are built within a single CMake context
 # The recommended prefix ensures that target names across packages don't collide
-file(GLOB_RECURSE magnetometer_sources src/magnetometer)
-add_executable(calibration_imu
+file(GLOB_RECURSE magnetometer_sources src/magnetometer *.cpp)
+add_executable(magnetometer
   src/fmain.ui
   src/fmain.cpp
   src/main.cpp
@@ -157,7 +157,7 @@ add_executable(calibration_imu
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 # Specify libraries to link a library or executable target against
- target_link_libraries(calibration_imu
+ target_link_libraries(magnetometer
    ${catkin_LIBRARIES}
    Qt5::Widgets
    Qt5::Charts
