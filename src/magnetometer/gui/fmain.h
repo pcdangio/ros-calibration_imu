@@ -15,7 +15,6 @@ QT_END_NAMESPACE
 
 #include <ros/ros.h>
 #include <sensor_msgs_ext/magnetometer.h>
-#include <qn_optimizer/qn_optimizer.h>
 
 #include <map>
 #include <deque>
@@ -93,14 +92,5 @@ private:
     void initialize_charts();
     void clear_charts();
     void update_charts();
-
-    qn_optimizer* m_optimizer_fit;
-    double objective_fit(const Eigen::VectorXd& variables);
-    Eigen::Matrix<double, 3, 1> m_c;
-    Eigen::Matrix<double, 3, 3> m_a;
-    Eigen::Matrix<double, 3, 1> m_d;
-    Eigen::Matrix<double, 1, 3> m_dt;
-    Eigen::Matrix<double, 1, 3> m_t1;
-    Eigen::Matrix<double, 1, 1> m_t2;
 };
 #endif // FMAIN_H

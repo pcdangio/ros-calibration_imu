@@ -1,4 +1,4 @@
-#include "fmain.h"
+#include "magnetometer/gui/fmain.h"
 
 #include <QApplication>
 

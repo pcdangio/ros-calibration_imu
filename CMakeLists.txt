@@ -140,9 +140,9 @@ include_directories(
 # With catkin_make all packages are built within a single CMake context
 # The recommended prefix ensures that target names across packages don't collide
 add_executable(magnetometer
-  src/fmain.ui
-  src/fmain.cpp
-  src/main.cpp
+  src/magnetometer/main.cpp
+  src/magnetometer/gui/fmain.ui
+  src/magnetometer/gui/fmain.cpp
   src/magnetometer/calibration/variables_center.cpp
   src/magnetometer/calibration/variables_rotation.cpp
   src/magnetometer/calibration/variables_radius.cpp

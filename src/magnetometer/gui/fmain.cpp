@@ -1,4 +1,4 @@
-#include "fmain.h"
+#include "magnetometer/gui/fmain.h"
 #include "ui_fmain.h"
 
 fmain::fmain(QWidget *parent)
@@ -12,9 +12,6 @@ fmain::fmain(QWidget *parent)
 
     // Read parameters.
     fmain::p_max_data_rate = fmain::m_node->param<double>("max_data_rate", 10.0);
-
-    // Set up optimizer.
-    fmain::m_optimizer_fit = new qn_optimizer(9, std::bind(&fmain::objective_fit, this, std::placeholders::_1));
 
     // Initialize state.
     fmain::m_state = fmain::state_t::IDLE;
@@ -141,62 +138,7 @@ void fmain::start_fit()
 {
     if(fmain::m_state == fmain::state_t::IDLE)
     {
-        // Set up variable vector with initial guess.
-        // Use c = 0,0,0 and A = identity (ortho axes)
-        Eigen::VectorXd fit;
-        fit.setZero(9);
-        fit(3) = 1.0;
-        fit(6) = 1.0;
-        fit(8) = 1.0;
-//        // Use point mid as initial guess for xc, yc, zc.
-//        // Use point range as initial guess for a,b,c.
-//        double x_min = std::numeric_limits<double>::max();
-//        double x_max = -std::numeric_limits<double>::max();
-//        double y_min = std::numeric_limits<double>::max();
-//        double y_max = -std::numeric_limits<double>::max();
-//        double z_min = std::numeric_limits<double>::max();
-//        double z_max = -std::numeric_limits<double>::max();
-//        for(auto point_entry = fmain::m_points.cbegin(); point_entry != fmain::m_points.cend(); ++point_entry)
-//        {
-//            fmain::point_t* point = *point_entry;
-//            if(point->x < x_min)
-//            {
-//                x_min = point->x;
-//            }
-//            if(point->x > x_max)
-//            {
-//                x_max = point->x;
-//            }
-//            if(point->y < y_min)
-//            {
-//                y_min = point->y;
-//            }
-//            if(point->y > y_max)
-//            {
-//                y_max = point->y;
-//            }
-//            if(point->z < z_min)
-//            {
-//                z_min = point->z;
-//            }
-//            if(point->z > z_max)
-//            {
-//                z_max = point->z;
-//            }
-//        }
-//        fit(0) = (x_min + x_max) / 2.0;
-//        fit(1) = (y_min + y_max) / 2.0;
-//        fit(2) = (z_min + z_max) / 2.0;
-//        fit(3) = x_max - x_min;
-//        fit(4) = y_max - y_min;
-//        fit(5) = z_max - z_min;
 
-        // Start the optimizer.
-        fmain::m_optimizer_fit->p_max_iterations = 100;
-        fmain::m_optimizer_fit->p_max_step_iterations = 10;
-        fmain::m_optimizer_fit->p_initial_step_size = 0.001;
-        fmain::m_optimizer_fit->optimize(fit);
-        fmain::setWindowTitle(QString::number(fit(0)));
 
         // Update state.
         fmain::m_state = fmain::state_t::FIT;
@@ -461,52 +403,7 @@ void fmain::subscriber(const sensor_msgs_ext::magnetometerConstPtr &message)
     }
 }
 
-// OPTIMIZATION FUNCTIONS
-double fmain::objective_fit(const Eigen::VectorXd& variables)
-{
-    // Calculate mean squared error of generalized ellipsoid function:
-    // (x-c)' * A * (x-c) = 1
-    // d = (x-c)
 
-    // Create c vector.
-    fmain::m_c(0) = variables(0);
-    fmain::m_c(1) = variables(1);
-    fmain::m_c(2) = variables(2);
-
-    // Create A Matrix.
-    fmain::m_a(0,0) = variables(3);
-    fmain::m_a(0,1) = variables(4);
-    fmain::m_a(1,0) = variables(4);
-    fmain::m_a(0,2) = variables(5);
-    fmain::m_a(2,0) = variables(5);
-    fmain::m_a(1,1) = variables(6);
-    fmain::m_a(1,2) = variables(7);
-    fmain::m_a(2,1) = variables(7);
-    fmain::m_a(2,2) = variables(8);
-
-    // Set up MSE to sum over all points.
-    double mse = 0.0;
-
-    // Iterate over each point in the collection.
-    for(auto point = fmain::m_points.cbegin(); point != fmain::m_points.cend(); ++point)
-    {
-        // Calculate difference vector and its transpose.
-        fmain::m_d(0) = (*point)->x - fmain::m_c(0);
-        fmain::m_d(1) = (*point)->y - fmain::m_c(1);
-        fmain::m_d(2) = (*point)->z - fmain::m_c(2);
-        fmain::m_dt.noalias() = fmain::m_d.transpose();
-
-        // Calculate actual value.
-        fmain::m_t1.noalias() = fmain::m_dt * fmain::m_a;
-        fmain::m_t2.noalias() = fmain::m_t1 * fmain::m_d;
-
-        // Calculate MSE and add to sum.
-        mse += std::pow(fmain::m_t2(0) - 1.0, 2.0);
-    }
-
-    // Return MSE.
-    return mse;
-}
 
 void fmain::on_button_start_fit_clicked()
 {
