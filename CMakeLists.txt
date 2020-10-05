@@ -143,11 +143,11 @@ add_executable(magnetometer
   src/fmain.ui
   src/fmain.cpp
   src/main.cpp
-  src/magnetometer/optimizer/variables_center.cpp
-  src/magnetometer/optimizer/variables_rotation.cpp
-  src/magnetometer/optimizer/variables_radius.cpp
-  src/magnetometer/optimizer/cost_objective.cpp
-  src/magnetometer/optimizer/optimizer.cpp)
+  src/magnetometer/calibration/variables_center.cpp
+  src/magnetometer/calibration/variables_rotation.cpp
+  src/magnetometer/calibration/variables_radius.cpp
+  src/magnetometer/calibration/cost_objective.cpp
+  src/magnetometer/calibration/calibrator.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

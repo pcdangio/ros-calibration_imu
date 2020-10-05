@@ -1,4 +1,4 @@
-#include "variables_rotation.h"
+#include "magnetometer/calibration/variables_rotation.h"
 
 using namespace ifopt;
 

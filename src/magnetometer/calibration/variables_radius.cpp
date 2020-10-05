@@ -1,4 +1,4 @@
-#include "variables_radius.h"
+#include "magnetometer/calibration/variables_radius.h"
 
 using namespace ifopt;
 

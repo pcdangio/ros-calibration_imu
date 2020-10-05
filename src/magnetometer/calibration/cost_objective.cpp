@@ -1,8 +1,8 @@
-#include "magnetometer/optimizer/cost_objective.h"
+#include "magnetometer/calibration/cost_objective.h"
 
-#include "magnetometer/optimizer/variables_center.h"
-#include "magnetometer/optimizer/variables_rotation.h"
-#include "magnetometer/optimizer/variables_radius.h"
+#include "magnetometer/calibration/variables_center.h"
+#include "magnetometer/calibration/variables_rotation.h"
+#include "magnetometer/calibration/variables_radius.h"
 
 using namespace ifopt;
 

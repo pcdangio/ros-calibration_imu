@@ -1,5 +1,5 @@
-#ifndef OPTIMIZER_H
-#define OPTIMIZER_H
+#ifndef CALIBRATOR_H
+#define CALIBRATOR_H
 
 #include <QObject>
 
@@ -10,24 +10,26 @@
 
 #include <ros/node_handle.h>
 
-#include "magnetometer/optimizer/variables_center.h"
-#include "magnetometer/optimizer/variables_rotation.h"
-#include "magnetometer/optimizer/variables_radius.h"
-#include "magnetometer/optimizer/cost_objective.h"
+#include "magnetometer/calibration/variables_center.h"
+#include "magnetometer/calibration/variables_rotation.h"
+#include "magnetometer/calibration/variables_radius.h"
+#include "magnetometer/calibration/cost_objective.h"
 
-class optimizer
+class calibrator
     : public QObject
 {
     Q_OBJECT
 public:
-    optimizer(const ros::NodeHandle& node_handle);
-    ~optimizer();
+    calibrator(const ros::NodeHandle& node_handle);
+    ~calibrator();
 
     bool initialize_center(double x, double y, double z);
     bool initialize_rotation(double r, double p, double y);
     bool initialize_radius(double a, double b, double c);
 
     bool start();
+
+    Eigen::Matrix<double, 4, 4> get_calibration();
 
 signals:
     void optimization_completed(bool success);
@@ -46,4 +48,4 @@ private:
     std::atomic<bool> m_running;
 };
 
-#endif // OPTIMIZER_H
+#endif
