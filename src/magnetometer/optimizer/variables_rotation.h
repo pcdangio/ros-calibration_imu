@@ -12,10 +12,7 @@ namespace ifopt
     public:
         // CONSTRUCTOR
         /// \brief Creates a new rotation variable set.
-        /// \param r The initial roll value.
-        /// \param p The initial pitch value.
-        /// \param y The initial yaw value.
-        variables_rotation(double r, double p, double y);
+        variables_rotation();
         ~variables_rotation();
 
         // OVERRIDES
@@ -28,6 +25,11 @@ namespace ifopt
         /// \param r The rotation matrix to populate.
         void rotation_matrix(Eigen::Matrix3d& r) const;
 
+        // PARAMETERS
+        /// \brief Sets the maximum allowable rotation.
+        /// \param value The value to set.
+        void p_max(double value);
+
     private:
         // VARIABLES
         /// \brief Stores the current roll value.
@@ -36,6 +38,10 @@ namespace ifopt
         double p;
         /// \brief Stores the current yaw value.
         double y;
+
+        // BOUNDS
+        /// \brief The maximum allowable rotation.
+        double max;
 
         // PREALLOCATIONS
         /// \brief The x rotation matrix.

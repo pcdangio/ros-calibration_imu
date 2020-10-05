@@ -3,12 +3,13 @@
 using namespace ifopt;
 
 // CONSTRUCTORS
-variables_rotation::variables_rotation(double r, double p, double y)
+variables_rotation::variables_rotation()
     : VariableSet(3, "rotation")
 {
-    variables_rotation::r = r;
-    variables_rotation::p = p;
-    variables_rotation::y = y;
+    variables_rotation::r = 0.0;
+    variables_rotation::p = 0.0;
+    variables_rotation::y = 0.0;
+    variables_rotation::max = M_PI;
 
     variables_rotation::rx = new Eigen::Matrix<double, 3, 3>;
     variables_rotation::ry = new Eigen::Matrix<double, 3, 3>;
@@ -39,9 +40,9 @@ Eigen::VectorXd variables_rotation::GetValues() const
 ifopt::Component::VecBound variables_rotation::GetBounds() const
 {
     ifopt::Component::VecBound bounds(3);
-    bounds.at(0) = ifopt::Bounds(-M_PI, M_PI);
-    bounds.at(1) = ifopt::Bounds(-M_PI, M_PI);
-    bounds.at(2) = ifopt::Bounds(-M_PI, M_PI);
+    bounds.at(0) = ifopt::Bounds(-variables_rotation::max, variables_rotation::max);
+    bounds.at(1) = ifopt::Bounds(-variables_rotation::max, variables_rotation::max);
+    bounds.at(2) = ifopt::Bounds(-variables_rotation::max, variables_rotation::max);
 
     return bounds;
 }
@@ -75,4 +76,10 @@ void variables_rotation::rotation_matrix(Eigen::Matrix3d& r) const
     // Combine by rz*ry*rx
     t.noalias() = rz * ry;
     r.noalias() = t * rx;
+}
+
+// PARAMETERS
+void variables_rotation::p_max(double value)
+{
+    variables_rotation::max = value;
 }

@@ -7,14 +7,11 @@
 using namespace ifopt;
 
 // CONSTRUCTORS
-cost_objective::cost_objective(const points_t* points, double perturbation)
+cost_objective::cost_objective()
     : CostTerm("objective")
 {
-    // Store points.
-    cost_objective::m_points = points;
-
-    // Store parameters.
-    cost_objective::p_perturbation = perturbation;
+    // Initialize parameters.
+    cost_objective::m_gradient_perturbation = 0.000001;
 
     // Set up pre-allocations.
     cost_objective::c = new Eigen::Matrix<double, 3, 1>;
@@ -102,13 +99,13 @@ void cost_objective::FillJacobianBlock(std::string variable_set, Jacobian& jacob
     {
         // Calculate cost at negative perturbation.
         auto minus = operating_point;
-        minus(i) -= cost_objective::p_perturbation;
+        minus(i) -= cost_objective::m_gradient_perturbation;
         variable->SetVariables(minus);
         double cost_minus = cost_objective::GetCost();
 
         // Calculate cost at positive perturbation.
         auto plus = operating_point;
-        plus(i) += cost_objective::p_perturbation;
+        plus(i) += cost_objective::m_gradient_perturbation;
         variable->SetVariables(plus);
         double cost_plus = cost_objective::GetCost();
 
@@ -116,6 +113,18 @@ void cost_objective::FillJacobianBlock(std::string variable_set, Jacobian& jacob
         variable->SetVariables(operating_point);
 
         // Calculate derivative.
-        jacobian.coeffRef(0,i) = (cost_plus - cost_minus) / (2.0 * cost_objective::p_perturbation);
+        jacobian.coeffRef(0,i) = (cost_plus - cost_minus) / (2.0 * cost_objective::m_gradient_perturbation);
     }
+}
+
+// INITIALIZATION
+void cost_objective::set_points(std::shared_ptr<const points_t> points)
+{
+    cost_objective::m_points = points;
+}
+
+// PARAMETERS
+void cost_objective::p_gradient_perturbation(double value)
+{
+    cost_objective::m_gradient_perturbation = value;
 }

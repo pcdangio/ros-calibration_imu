@@ -139,12 +139,15 @@ include_directories(
 # Declare a C++ executable
 # With catkin_make all packages are built within a single CMake context
 # The recommended prefix ensures that target names across packages don't collide
-file(GLOB_RECURSE magnetometer_sources src/magnetometer *.cpp)
 add_executable(magnetometer
   src/fmain.ui
   src/fmain.cpp
   src/main.cpp
-  ${magnetometer_sources})
+  src/magnetometer/optimizer/variables_center.cpp
+  src/magnetometer/optimizer/variables_rotation.cpp
+  src/magnetometer/optimizer/variables_radius.cpp
+  src/magnetometer/optimizer/cost_objective.cpp
+  src/magnetometer/optimizer/optimizer.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

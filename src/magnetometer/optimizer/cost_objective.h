@@ -14,22 +14,31 @@ namespace ifopt
     public:
         // CONSTRUCTORS
         /// \brief Instantiates a new cost_objective instance.
-        /// \param points The points to fit.
-        cost_objective(const points_t* points, double perturbation = 0.000001);
+        cost_objective();
         ~cost_objective();
 
         // OVERRIDES
         double GetCost() const override;
         void FillJacobianBlock(std::string variable_set, Jacobian& jacobian) const override;
 
+        // INITIALIZATION
+        /// \brief Sets the points to fit.
+        /// \param points The points to fit.
+        void set_points(std::shared_ptr<const points_t> points);
+
+        // PARAMETERS
+        /// \brief Sets the gradient perturbation parameter.
+        /// \param value The new value.
+        void p_gradient_perturbation(double value);
+
     private:
         // VARIABLES
         /// \brief Stores the points to fit.
-        const points_t* m_points;
+        std::shared_ptr<const points_t> m_points;
 
         // PARAMETERS
         /// \brief Stores the perturbation for gradient calculation.
-        double p_perturbation;
+        double m_gradient_perturbation;
 
         // PREALLOCATIONS
         /// \brief The fitted ellipse center point.
