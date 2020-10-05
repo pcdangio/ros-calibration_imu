@@ -1,2 +1,3 @@
 # Ignore IDE files
 *.user
+.vscode/
