@@ -9,27 +9,30 @@ INCLUDEPATH += \
     ../../devel/include \
     src
 
-SOURCES += \
-        src/magnetometer/optimizer/cost_objective.cpp \
-        src/magnetometer/optimizer/optimizer.cpp \
-        src/magnetometer/optimizer/variables_center.cpp \
-        src/magnetometer/optimizer/variables_radius.cpp \
-        src/magnetometer/optimizer/variables_rotation.cpp \
-        src/main.cpp \
-        src/fmain.cpp
-
-HEADERS += \
-        src/fmain.h \
-        src/magnetometer/optimizer/cost_objective.h \
-        src/magnetometer/optimizer/optimizer.h \
-        src/magnetometer/optimizer/variables_center.h \
-        src/magnetometer/optimizer/variables_radius.h \
-        src/magnetometer/optimizer/variables_rotation.h \
-        src/magnetometer/point.h
-
-FORMS += \
-        src/fmain.ui
-
 DISTFILES += \
     CMakeLists.txt \
+    LICENSE \
+    README.md \
     package.xml
+
+FORMS += \
+    src/magnetometer/gui/fmain.ui
+
+HEADERS += \
+    src/magnetometer/calibration/calibrator.h \
+    src/magnetometer/calibration/cost_objective.h \
+    src/magnetometer/calibration/variables_center.h \
+    src/magnetometer/calibration/variables_radius.h \
+    src/magnetometer/calibration/variables_rotation.h \
+    src/magnetometer/data/data_interface.h \
+    src/magnetometer/gui/fmain.h
+
+SOURCES += \
+    src/magnetometer/calibration/calibrator.cpp \
+    src/magnetometer/calibration/cost_objective.cpp \
+    src/magnetometer/calibration/variables_center.cpp \
+    src/magnetometer/calibration/variables_radius.cpp \
+    src/magnetometer/calibration/variables_rotation.cpp \
+    src/magnetometer/data/data_interface.cpp \
+    src/magnetometer/gui/fmain.cpp \
+    src/magnetometer/main.cpp
