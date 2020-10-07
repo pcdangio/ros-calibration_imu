@@ -3,7 +3,7 @@
 
 #include <ifopt/cost_term.h>
 
-#include "magnetometer/point.h"
+#include "magnetometer/data/data_interface.h"
 
 namespace ifopt
 {
@@ -14,17 +14,13 @@ namespace ifopt
     public:
         // CONSTRUCTORS
         /// \brief Instantiates a new cost_objective instance.
-        cost_objective();
+        /// \param data_interface A pointer to the magnetometer data interface.
+        cost_objective(std::shared_ptr<magnetometer::data_interface> data_interface);
         ~cost_objective();
 
         // OVERRIDES
         double GetCost() const override;
         void FillJacobianBlock(std::string variable_set, Jacobian& jacobian) const override;
-
-        // INITIALIZATION
-        /// \brief Sets the points to fit.
-        /// \param points The points to fit.
-        void set_points(std::shared_ptr<const points_t> points);
 
         // PARAMETERS
         /// \brief Sets the gradient perturbation parameter.
@@ -32,9 +28,8 @@ namespace ifopt
         void p_gradient_perturbation(double value);
 
     private:
-        // VARIABLES
-        /// \brief Stores the points to fit.
-        std::shared_ptr<const points_t> m_points;
+        // COMPONENTS
+        std::shared_ptr<magnetometer::data_interface> m_data_interface;
 
         // PARAMETERS
         /// \brief Stores the perturbation for gradient calculation.

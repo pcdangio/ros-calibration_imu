@@ -8,7 +8,7 @@
 
 #include <boost/thread.hpp>
 
-#include <ros/node_handle.h>
+#include "magnetometer/data/data_interface.h"
 
 #include "magnetometer/calibration/variables_center.h"
 #include "magnetometer/calibration/variables_rotation.h"
@@ -20,7 +20,7 @@ class calibrator
 {
     Q_OBJECT
 public:
-    calibrator(const ros::NodeHandle& node_handle);
+    calibrator(std::shared_ptr<magnetometer::data_interface> data_interface);
     ~calibrator();
 
     bool initialize_center(double x, double y, double z);

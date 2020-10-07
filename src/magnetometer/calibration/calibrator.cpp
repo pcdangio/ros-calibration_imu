@@ -1,6 +1,8 @@
 #include "magnetometer/calibration/calibrator.h"
 
-calibrator::calibrator(const ros::NodeHandle& node_handle)
+#include <ros/node_handle.h>
+
+calibrator::calibrator(std::shared_ptr<magnetometer::data_interface> data_interface)
 {
     // Set up variable sets.
     calibrator::m_variables_center = std::make_shared<ifopt::variables_center>();
@@ -8,7 +10,7 @@ calibrator::calibrator(const ros::NodeHandle& node_handle)
     calibrator::m_variables_radius = std::make_shared<ifopt::variables_radius>();
 
     // Set up cost term.
-    calibrator::m_cost_objective = std::make_shared<ifopt::cost_objective>();
+    calibrator::m_cost_objective = std::make_shared<ifopt::cost_objective>(data_interface);
 
     // Set up problem.
     calibrator::m_problem.AddVariableSet(calibrator::m_variables_center);
@@ -17,11 +19,12 @@ calibrator::calibrator(const ros::NodeHandle& node_handle)
     calibrator::m_problem.AddCostSet(calibrator::m_cost_objective);
 
     // Set parameters.
-    calibrator::m_variables_center->p_max(node_handle.param<double>("calibration_max_center", 50.0));
-    calibrator::m_variables_rotation->p_max(node_handle.param<double>("calibration_max_rotation", M_PI));
-    calibrator::m_variables_radius->p_max(node_handle.param<double>("calibration_max_radius", 50.0));
-    calibrator::m_cost_objective->p_gradient_perturbation(node_handle.param<double>("calibration_gradient_perturbation", 0.000001));
-    calibrator::m_solver.SetOption("max_cpu_time", node_handle.param<double>("calibration_max_time", 15.0));
+    ros::NodeHandle private_handle("~");
+    calibrator::m_variables_center->p_max(private_handle.param<double>("calibration_max_center", 50.0));
+    calibrator::m_variables_rotation->p_max(private_handle.param<double>("calibration_max_rotation", M_PI));
+    calibrator::m_variables_radius->p_max(private_handle.param<double>("calibration_max_radius", 50.0));
+    calibrator::m_cost_objective->p_gradient_perturbation(private_handle.param<double>("calibration_gradient_perturbation", 0.000001));
+    calibrator::m_solver.SetOption("max_cpu_time", private_handle.param<double>("calibration_max_time", 15.0));
 
     // Initialize thread.
     calibrator::m_running = false;
@@ -87,6 +90,16 @@ bool calibrator::start()
 Eigen::Matrix<double, 4, 4> calibrator::get_calibration()
 {
     
+    // desired_radius = 3;
+    // s = eye(3);
+    // s(1,1) = desired_radius / result(7);
+    // s(2,2) = desired_radius / result(8);
+    // s(3,3) = desired_radius / result(9);
+    // r = rotation_matrix(result(1), result(2), result(3));
+
+    // h = eye(4);
+    // h(1:3,1:3) = r*s*r';
+    // h(1:3,4) = -result(7:9)';
 }
 
 

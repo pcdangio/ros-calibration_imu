@@ -7,9 +7,12 @@
 using namespace ifopt;
 
 // CONSTRUCTORS
-cost_objective::cost_objective()
+cost_objective::cost_objective(std::shared_ptr<magnetometer::data_interface> data_interface)
     : CostTerm("objective")
 {
+    // Store data interface.
+    cost_objective::m_data_interface = data_interface;
+
     // Initialize parameters.
     cost_objective::m_gradient_perturbation = 0.000001;
 
@@ -66,12 +69,11 @@ double cost_objective::GetCost() const
     
     // Iterate through points.
     double mse = 0.0;
-    for(auto point = cost_objective::m_points->cbegin(); point != cost_objective::m_points->cend(); ++point)
+    for(uint32_t i = 0; i < cost_objective::m_data_interface->n_points(); ++i)
     {
         // Create p vector.
-        p(0) = point->x - c(0);
-        p(1) = point->y - c(1);
-        p(2) = point->z - c(2);
+        cost_objective::m_data_interface->get_point(i, p);
+        p -= c;
         p_t.noalias() = p.transpose();
 
         // Evaluate point against ellipsoid equation.
@@ -85,7 +87,7 @@ double cost_objective::GetCost() const
         mse += std::pow(v(0,0) - 1.0, 2.0);
     }
     // Take average of MSE.
-    mse /= static_cast<double>(cost_objective::m_points->size());
+    mse /= static_cast<double>(cost_objective::m_data_interface->n_points());
 
     return mse;
 }
@@ -115,12 +117,6 @@ void cost_objective::FillJacobianBlock(std::string variable_set, Jacobian& jacob
         // Calculate derivative.
         jacobian.coeffRef(0,i) = (cost_plus - cost_minus) / (2.0 * cost_objective::m_gradient_perturbation);
     }
-}
-
-// INITIALIZATION
-void cost_objective::set_points(std::shared_ptr<const points_t> points)
-{
-    cost_objective::m_points = points;
 }
 
 // PARAMETERS
