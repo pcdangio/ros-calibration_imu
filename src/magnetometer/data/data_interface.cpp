@@ -126,6 +126,9 @@ void data_interface::clear_data()
     data_interface::m_x.clear();
     data_interface::m_y.clear();
     data_interface::m_z.clear();
+
+    // Emit updated signal.
+    emit data_interface::data_updated();
 }
 
 // DATA ACCESS
@@ -179,6 +182,6 @@ void data_interface::subscriber(const sensor_msgs_ext::magnetometerConstPtr& mes
         data_interface::m_z.push_back(message->z);
 
         // Raise signal.
-        emit data_interface::point_received();
+        emit data_interface::data_updated();
     }
 }

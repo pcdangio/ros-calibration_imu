@@ -61,8 +61,8 @@ public:
     bool get_point(uint32_t index, QVector3D& point);
 
 signals:
-    /// \brief Indicates when a new point has been received.
-    void point_received();
+    /// \brief Indicates when the data has changed.
+    void data_updated();
 
 private:
     // DATA SUBSCRIBER
