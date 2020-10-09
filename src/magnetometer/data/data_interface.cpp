@@ -140,9 +140,9 @@ bool data_interface::get_point(uint32_t index, Eigen::Vector3d& point)
 {
     if(index < data_interface::m_x.size())
     {
-        point(0) = data_interface::m_x.at(index);
-        point(1) = data_interface::m_y.at(index);
-        point(2) = data_interface::m_z.at(index);
+        point(0) = data_interface::m_x.at(index) * data_interface::m_scale_factor;
+        point(1) = data_interface::m_y.at(index) * data_interface::m_scale_factor;
+        point(2) = data_interface::m_z.at(index) * data_interface::m_scale_factor;
 
         return true;
     }
@@ -155,9 +155,9 @@ bool data_interface::get_point(uint32_t index, QVector3D& point)
 {
     if(index < data_interface::m_x.size())
     {
-        point.setX(data_interface::m_x.at(index));
-        point.setY(data_interface::m_y.at(index));
-        point.setZ(data_interface::m_z.at(index));
+        point.setX(data_interface::m_x.at(index) * data_interface::m_scale_factor);
+        point.setY(data_interface::m_z.at(index) * data_interface::m_scale_factor);
+        point.setZ(data_interface::m_y.at(index) * data_interface::m_scale_factor);
 
         return true;
     }

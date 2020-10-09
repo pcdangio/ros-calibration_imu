@@ -80,6 +80,8 @@ private:
     QElapsedTimer m_data_timer;
 
     // DATA
+    /// \brief Scale factor for converting from T to uT.
+    const double m_scale_factor = 1000000.0;
     /// \brief Magnetometer x-axis data.
     std::vector<double> m_x;
     /// \brief Magnetometer y-axis data.
