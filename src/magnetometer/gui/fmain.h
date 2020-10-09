@@ -33,6 +33,10 @@ private slots:
 
     void collection_updated();
 
+    void on_button_save_collection_clicked();
+
+    void on_button_load_collection_clicked();
+
 private:
     Ui::fmain *ui;
 

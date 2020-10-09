@@ -105,10 +105,13 @@ bool data_interface::load_data(std::string& bag_file)
             if(message)
             {
                 data_interface::m_x.push_back(message->x);
-                data_interface::m_y.push_back(message->x);
-                data_interface::m_z.push_back(message->x);
+                data_interface::m_y.push_back(message->y);
+                data_interface::m_z.push_back(message->z);
             }
         }
+
+        // Emit updated signal.
+        emit data_interface::data_updated();
 
         return true;
     }

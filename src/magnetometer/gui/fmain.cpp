@@ -1,6 +1,8 @@
 #include "magnetometer/gui/fmain.h"
 #include "ui_fmain.h"
 
+#include <QFileDialog>
+
 fmain::fmain(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::fmain)
@@ -71,4 +73,42 @@ void fmain::collection_updated()
 {
     // Update point counter.
     fmain::ui->lineedit_n_collection_points->setText(QString::number(fmain::m_data_interface->n_points()));
+}
+
+void fmain::on_button_save_collection_clicked()
+{
+    // Create save dialog.
+    QFileDialog save_dialog(this);
+    save_dialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+    save_dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+    save_dialog.setNameFilter("ROS Bag Files (*.bag)");
+    save_dialog.setViewMode(QFileDialog::ViewMode::Detail);
+    save_dialog.setWindowTitle("Save Data");
+
+    // Run dialog.
+    if(save_dialog.exec())
+    {
+        // Save data.
+        std::string bag_file = save_dialog.selectedFiles().first().toStdString();
+        fmain::m_data_interface->save_data(bag_file);
+    }
+}
+
+void fmain::on_button_load_collection_clicked()
+{
+    // Create load dialog.
+    QFileDialog load_dialog(this);
+    load_dialog.setAcceptMode(QFileDialog::AcceptMode::AcceptOpen);
+    load_dialog.setFileMode(QFileDialog::FileMode::ExistingFile);
+    load_dialog.setNameFilter("ROS Bag Files (*.bag)");
+    load_dialog.setViewMode(QFileDialog::ViewMode::Detail);
+    load_dialog.setWindowTitle("Load Data");
+
+    // Run dialog.
+    if(load_dialog.exec())
+    {
+        // Save data.
+        std::string bag_file = load_dialog.selectedFiles().first().toStdString();
+        fmain::m_data_interface->load_data(bag_file);
+    }
 }
