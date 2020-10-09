@@ -1,7 +1,11 @@
 #include "magnetometer/data/data_interface.h"
 
+#include <rosbag/bag.h>
+#include <rosbag/view.h>
+
 using namespace magnetometer;
 
+// CONSTRUCTORS
 data_interface::data_interface()
 {
     // Initialize flags.
@@ -17,6 +21,7 @@ data_interface::~data_interface()
     data_interface::stop_subscriber();
 }
 
+// DATA SUBSCRIBER
 void data_interface::start_subscriber()
 {
     if(!data_interface::f_subscriber_enabled)
@@ -37,15 +42,84 @@ void data_interface::stop_subscriber()
     }
 }
 
+// DATA FILE IO
 bool data_interface::save_data(std::string& bag_file) const
 {
+    // Get remapped topic to write to.
+    std::string topic = ros::names::resolve("/imu/magnetometer");
 
+    // Write file.
+    try
+    {
+        // Open the bag file for writing.
+        rosbag::Bag bag(bag_file, rosbag::bagmode::Write);
+
+        // Iterate over points.
+        sensor_msgs_ext::magnetometer message;
+        for(uint32_t i = 0; i < data_interface::m_x.size(); ++i)
+        {
+            // Populate message.
+            message.x = data_interface::m_x.at(i);
+            message.y = data_interface::m_y.at(i);
+            message.z = data_interface::m_z.at(i);
+
+            // Write message to bag.
+            bag.write(topic, ros::Time::now(), message);
+        }
+
+        // Close bag.
+        bag.close();
+
+        return true;
+    }
+    catch(std::exception& e)
+    {
+        ROS_ERROR_STREAM("error writing data to bag file (" << e.what() << ")");
+        return false;
+    }
 }
 bool data_interface::load_data(std::string& bag_file)
 {
+    // Clear existing data.
+    data_interface::clear_data();
 
+    // Get remapped topic to read from.
+    std::string topic = ros::names::resolve("/imu/magnetometer");
+
+    // Read file.
+    try
+    {
+        // Open the bag file for reading.
+        rosbag::Bag bag(bag_file, rosbag::bagmode::Read);
+
+        // Get view to magnetometer topic.
+        rosbag::View view(bag, rosbag::TopicQuery(topic));
+
+        // Iterate through view.
+        for(auto instance = view.begin(); instance != view.end(); ++instance)
+        {
+            // Instantiate message.
+            auto message = instance->instantiate<sensor_msgs_ext::magnetometer>();
+
+            // Read message.
+            if(message)
+            {
+                data_interface::m_x.push_back(message->x);
+                data_interface::m_y.push_back(message->x);
+                data_interface::m_z.push_back(message->x);
+            }
+        }
+
+        return true;
+    }
+    catch(std::exception& e)
+    {
+        ROS_ERROR_STREAM("error reading from bag file (" << e.what() << ")");
+        return false;
+    }
 }
 
+// DATA MANAGER
 void data_interface::clear_data()
 {
     // Clear data vectors.
@@ -54,6 +128,7 @@ void data_interface::clear_data()
     data_interface::m_z.clear();
 }
 
+// DATA ACCESS
 uint32_t data_interface::n_points()
 {
     return data_interface::m_x.size();
@@ -89,6 +164,7 @@ bool data_interface::get_point(uint32_t index, QVector3D& point)
     }
 }
 
+// DATA SUBSCRIBER
 void data_interface::subscriber(const sensor_msgs_ext::magnetometerConstPtr& message)
 {
     // Enforce max data rate.
