@@ -10,7 +10,8 @@ project(calibration_imu)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs_ext
-  ifopt)
+  ifopt
+  rosbag)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -21,7 +22,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 find_package(Qt5 REQUIRED COMPONENTS
     Widgets
-    Charts)
+    DataVisualization)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -144,6 +145,7 @@ add_executable(magnetometer
   src/magnetometer/gui/fmain.ui
   src/magnetometer/gui/fmain.cpp
   src/magnetometer/data/data_interface.cpp
+  src/magnetometer/graph/graph.cpp
   src/magnetometer/calibration/variables_center.cpp
   src/magnetometer/calibration/variables_rotation.cpp
   src/magnetometer/calibration/variables_radius.cpp
@@ -164,7 +166,7 @@ add_executable(magnetometer
  target_link_libraries(magnetometer
    ${catkin_LIBRARIES}
    Qt5::Widgets
-   Qt5::Charts
+   Qt5::DataVisualization
  )
 
 #############
