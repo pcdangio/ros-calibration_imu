@@ -8,15 +8,11 @@ namespace Ui { class fmain; }
 QT_END_NAMESPACE
 
 #include "magnetometer/data/data_interface.h"
+#include "magnetometer/graph/graph.h"
 
-#include <QtCharts/QChart>
-#include <QtCharts/QValueAxis>
-#include <QtCharts/QScatterSeries>
 #include <QTimer>
 
 #include <ros/ros.h>
-
-#include <map>
 
 class fmain : public QMainWindow
 {
@@ -33,11 +29,9 @@ private slots:
 
     void on_button_stop_collection_clicked();
 
-    void on_combobox_charts_currentIndexChanged(int index);
-
     void on_button_clear_collection_clicked();
 
-    void on_button_start_fit_clicked();
+    void collection_updated();
 
 private:
     Ui::fmain *ui;
@@ -47,33 +41,6 @@ private:
     void ros_spin();
 
     std::shared_ptr<magnetometer::data_interface> m_data_interface;
-
-    enum class chart_t
-    {
-        XY = 0,
-        XZ = 1,
-        YZ = 2,
-    };
-
-    void start_fit();
-    void stop_fit();
-
-    enum class state_t
-    {
-        IDLE = 0,
-        COLLECTION = 1,
-        FIT = 2,
-        TRANSFORM = 3
-    };
-    state_t m_state;
-
-    std::map<chart_t, QtCharts::QChart*> m_charts;
-    std::map<chart_t, QtCharts::QValueAxis*> m_axes_x;
-    std::map<chart_t, QtCharts::QValueAxis*> m_axes_y;
-    std::map<chart_t, QtCharts::QScatterSeries*> m_series_collections;
-    std::map<chart_t, QtCharts::QScatterSeries*> m_series_current_position;
-    void initialize_charts();
-    void clear_charts();
-    void update_charts();
+    std::shared_ptr<magnetometer::graph> m_graph;
 };
 #endif // FMAIN_H

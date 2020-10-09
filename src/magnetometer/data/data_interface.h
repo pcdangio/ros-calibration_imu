@@ -61,8 +61,8 @@ public:
     bool get_point(uint32_t index, QVector3D& point);
 
 signals:
-    /// \brief Indicates when a new point has been received.
-    void point_received();
+    /// \brief Indicates when the data has changed.
+    void data_updated();
 
 private:
     // DATA SUBSCRIBER
@@ -80,6 +80,8 @@ private:
     QElapsedTimer m_data_timer;
 
     // DATA
+    /// \brief Scale factor for converting from T to uT.
+    const double m_scale_factor = 1000000.0;
     /// \brief Magnetometer x-axis data.
     std::vector<double> m_x;
     /// \brief Magnetometer y-axis data.

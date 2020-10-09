@@ -2,7 +2,7 @@
 
 #include <ros/node_handle.h>
 
-calibrator::calibrator(std::shared_ptr<magnetometer::data_interface> data_interface)
+calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface)
 {
     // Set up variable sets.
     calibrator::m_variables_center = std::make_shared<ifopt::variables_center>();
