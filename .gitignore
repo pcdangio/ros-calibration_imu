@@ -1,3 +1,4 @@
 # Ignore IDE files
 *.user
+*.autosave
 .vscode/
