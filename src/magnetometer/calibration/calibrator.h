@@ -20,7 +20,7 @@ class calibrator
 {
     Q_OBJECT
 public:
-    calibrator(std::shared_ptr<magnetometer::data_interface> data_interface);
+    calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface);
     ~calibrator();
 
     bool initialize_center(double x, double y, double z);

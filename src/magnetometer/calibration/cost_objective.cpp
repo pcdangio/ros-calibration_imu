@@ -7,7 +7,7 @@
 using namespace ifopt;
 
 // CONSTRUCTORS
-cost_objective::cost_objective(std::shared_ptr<magnetometer::data_interface> data_interface)
+cost_objective::cost_objective(std::shared_ptr<magnetometer::data_interface>& data_interface)
     : CostTerm("objective")
 {
     // Store data interface.

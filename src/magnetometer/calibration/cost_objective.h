@@ -15,7 +15,7 @@ namespace ifopt
         // CONSTRUCTORS
         /// \brief Instantiates a new cost_objective instance.
         /// \param data_interface A pointer to the magnetometer data interface.
-        cost_objective(std::shared_ptr<magnetometer::data_interface> data_interface);
+        cost_objective(std::shared_ptr<magnetometer::data_interface>& data_interface);
         ~cost_objective();
 
         // OVERRIDES
