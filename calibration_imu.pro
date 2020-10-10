@@ -25,6 +25,8 @@ HEADERS += \
     src/magnetometer/calibration/variables_radius.h \
     src/magnetometer/calibration/variables_rotation.h \
     src/magnetometer/data/data_interface.h \
+    src/magnetometer/data/ellipsoid.h \
+    src/magnetometer/geometry/ellipsoid.h \
     src/magnetometer/graph/graph.h \
     src/magnetometer/gui/fmain.h
 
@@ -35,6 +37,7 @@ SOURCES += \
     src/magnetometer/calibration/variables_radius.cpp \
     src/magnetometer/calibration/variables_rotation.cpp \
     src/magnetometer/data/data_interface.cpp \
+    src/magnetometer/geometry/ellipsoid.cpp \
     src/magnetometer/graph/graph.cpp \
     src/magnetometer/gui/fmain.cpp \
     src/magnetometer/main.cpp

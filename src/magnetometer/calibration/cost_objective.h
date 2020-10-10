@@ -4,6 +4,7 @@
 #include <ifopt/cost_term.h>
 
 #include "magnetometer/data/data_interface.h"
+#include "magnetometer/geometry/ellipsoid.h"
 
 namespace ifopt
 {
@@ -36,24 +37,8 @@ namespace ifopt
         double m_gradient_perturbation;
 
         // PREALLOCATIONS
-        /// \brief The fitted ellipse center point.
-        Eigen::Matrix<double, 3, 1>* c;
-        /// \brief A point of the ellipse.
-        Eigen::Matrix<double, 3, 1>* p;
-        /// \brief A transposed point of the ellipse.
-        Eigen::Matrix<double, 1, 3>* p_t;
-        /// \brief The rotation of the fitted ellipse.
-        Eigen::Matrix<double, 3, 3>* r;
-        /// \brief The transposed rotation of the fitted ellipse.
-        Eigen::Matrix<double, 3, 3>* r_t;
-        /// \brief The fitted ellipse radius matrix.
-        Eigen::Matrix<double, 3, 3>* e;
-        /// \brief A temporary matrix.
-        Eigen::Matrix<double, 1, 3>* t1;
-        /// \brief A temporary matrix.
-        Eigen::Matrix<double, 1, 3>* t2;
-        /// \brief The ellipse equation value.
-        Eigen::Matrix<double, 1, 1>* v;
+        /// \brief A preallocated ellipse for calculation.
+        magnetometer::ellipsoid* m_ellipsoid;
     };
 }
 
