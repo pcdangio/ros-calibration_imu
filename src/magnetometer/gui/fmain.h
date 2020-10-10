@@ -8,6 +8,7 @@ namespace Ui { class fmain; }
 QT_END_NAMESPACE
 
 #include "magnetometer/data/data_interface.h"
+#include "magnetometer/calibration/calibrator.h"
 #include "magnetometer/graph/graph.h"
 
 #include <QTimer>
@@ -32,10 +33,15 @@ private slots:
     void on_button_clear_collection_clicked();
 
     void collection_updated();
+    void calibration_finished(bool success);
 
     void on_button_save_collection_clicked();
 
     void on_button_load_collection_clicked();
+
+    void on_checkbox_graph_uncalibrated_stateChanged(int state);
+
+    void on_button_calibrate_clicked();
 
 private:
     Ui::fmain *ui;
@@ -45,6 +51,7 @@ private:
     void ros_spin();
 
     std::shared_ptr<magnetometer::data_interface> m_data_interface;
+    std::shared_ptr<magnetometer::calibrator> m_calibrator;
     std::shared_ptr<magnetometer::graph> m_graph;
 };
 #endif // FMAIN_H

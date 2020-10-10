@@ -15,6 +15,11 @@
 #include "magnetometer/calibration/variables_radius.h"
 #include "magnetometer/calibration/cost_objective.h"
 
+#include "magnetometer/geometry/ellipsoid.h"
+
+namespace magnetometer
+{
+
 class calibrator
     : public QObject
 {
@@ -23,13 +28,10 @@ public:
     calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface);
     ~calibrator();
 
-    bool initialize_center(double x, double y, double z);
-    bool initialize_rotation(double r, double p, double y);
-    bool initialize_radius(double a, double b, double c);
+    bool start(const ellipsoid& initial_guess);
 
-    bool start();
-
-    Eigen::Matrix<double, 4, 4> get_calibration();
+    void get_fit(ellipsoid& ellipse);
+    void get_calibration(Eigen::Matrix3d& m, Eigen::Vector3d& t);
 
 signals:
     void optimization_completed(bool success);
@@ -47,5 +49,7 @@ private:
     void thread_worker();
     std::atomic<bool> m_running;
 };
+
+}
 
 #endif

@@ -2,6 +2,8 @@
 
 #include <ros/node_handle.h>
 
+using namespace magnetometer;
+
 calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface)
 {
     // Set up variable sets.
@@ -37,48 +39,25 @@ calibrator::~calibrator()
     }
 }
 
-bool calibrator::initialize_center(double x, double y, double z)
+bool calibrator::start(const magnetometer::ellipsoid& initial_guess)
 {
-    if(calibrator::m_running)
-    {
-        return false;
-    }
-
-    Eigen::Vector3d initial_value = {x, y, z};
-    calibrator::m_variables_center->SetVariables(initial_value);
-
-    return true;
-}
-bool calibrator::initialize_rotation(double r, double p, double y)
-{
-    if(calibrator::m_running)
-    {
-        return false;
-    }
-
-    Eigen::Vector3d initial_value = {r, p, y};
-    calibrator::m_variables_rotation->SetVariables(initial_value);
-
-    return true;
-}
-bool calibrator::initialize_radius(double a, double b, double c)
-{
-    if(calibrator::m_running)
-    {
-        return false;
-    }
-
-    Eigen::Vector3d initial_value = {a, b, c};
-    calibrator::m_variables_radius->SetVariables(initial_value);
-
-    return true;
-}
-
-bool calibrator::start()
-{
-    // Start thread.
+    // Check if thread is running.
     if(!calibrator::m_running)
     {
+        // Initialize values.
+        Eigen::Vector3d initial_center;
+        initial_guess.get_center(initial_center);
+        calibrator::m_variables_center->SetVariables(initial_center);
+
+        Eigen::Vector3d initial_radius;
+        initial_guess.get_radius(initial_radius);
+        calibrator::m_variables_radius->SetVariables(initial_radius);
+
+        Eigen::Vector3d initial_rotation;
+        initial_guess.get_rotation(initial_rotation);
+        calibrator::m_variables_rotation->SetVariables(initial_rotation);
+
+        // Start optimization thread to generate fit.
         calibrator::m_thread = boost::thread(&calibrator::thread_worker, this);
         return true;
     }
@@ -87,7 +66,16 @@ bool calibrator::start()
         return false;
     }
 }
-Eigen::Matrix<double, 4, 4> calibrator::get_calibration()
+
+
+void calibrator::get_fit(ellipsoid& ellipse)
+{
+    // Return ellipsoid parameters.
+    ellipse.set_center(calibrator::m_variables_center->GetValues());
+    ellipse.set_radius(calibrator::m_variables_radius->GetValues());
+    ellipse.set_rotation(calibrator::m_variables_rotation->GetValues());
+}
+void calibrator::get_calibration(Eigen::Matrix3d& m, Eigen::Vector3d& t)
 {
     
     // desired_radius = 3;
