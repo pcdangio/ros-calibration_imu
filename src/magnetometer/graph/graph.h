@@ -22,8 +22,10 @@ public:
     QWidget* get_widget();
 
     void uncalibrated_visible(bool visible);
-    void indicate_new_point(bool enabled);
     void calibrated_visible(bool visible);
+
+    void indicate_new_point(bool enabled);
+
 
 public slots:
     void update_uncalibrated_plot();

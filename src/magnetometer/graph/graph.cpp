@@ -56,6 +56,7 @@ QWidget* graph::get_widget()
 void graph::uncalibrated_visible(bool visible)
 {
     graph::m_series_uncalibrated->setVisible(visible);
+    graph::m_series_uncalibrated_new->setVisible(visible);
 }
 void graph::indicate_new_point(bool enabled)
 {
