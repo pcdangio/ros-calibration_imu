@@ -100,7 +100,7 @@ void calibrator::thread_worker()
     calibrator::m_solver.Solve(calibrator::m_problem);
 
     // Signal completion.
-    calibrator::optimization_completed(calibrator::m_solver.GetReturnStatus() == 0);
+    calibrator::calibration_completed(calibrator::m_solver.GetReturnStatus() == 0);
 
     // Flag thread as finished.
     calibrator::m_running = false;

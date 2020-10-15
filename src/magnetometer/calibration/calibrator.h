@@ -34,7 +34,7 @@ public:
     void get_calibration(Eigen::Matrix3d& m, Eigen::Vector3d& t);
 
 signals:
-    void optimization_completed(bool success);
+    void calibration_completed(bool success);
 
 private:
     std::shared_ptr<ifopt::variables_center> m_variables_center;
