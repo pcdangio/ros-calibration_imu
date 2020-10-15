@@ -2,7 +2,8 @@
 #define ELLIPSOID_H
 
 #include <eigen3/Eigen/Dense>
-#include <QVector3D>
+
+#include <QtDataVisualization/QScatterDataArray>
 
 namespace magnetometer
 {
@@ -24,7 +25,7 @@ public:
 
     double residual(const Eigen::Vector3d& point);
 
-    void draw(std::vector<QVector3D>& points) const;
+    void draw(QtDataVisualization::QScatterDataArray* points) const;
 
 private:
     Eigen::Vector3d m_center;

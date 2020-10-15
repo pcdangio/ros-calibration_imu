@@ -99,29 +99,37 @@ double ellipsoid::residual(const Eigen::Vector3d& point)
     // Return residual.
     return ellipsoid::m_v(0,0) - 1.0;
 }
-void ellipsoid::draw(std::vector<QVector3D>& points) const
+void ellipsoid::draw(QtDataVisualization::QScatterDataArray *points) const
 {
     // Set number of angles to a factor of 4.
     uint32_t n_angles = 20;
 
     // Set up points vector for receiving drawn ellipse.
-    points.clear();
-    points.reserve(n_angles * n_angles);
+    points->clear();
+    points->reserve(n_angles * n_angles);
 
     // Use parametric equations for ellipsoid.
 
     // Iterate over angles.
     double range = 2.0 * M_PI;
     double step = range / static_cast<double>(n_angles);
+    Eigen::Vector3d p, pr, pt;
     for(double u = 0; u < range; u += step)
     {
         for(double v = 0; v < range; v+= step)
         {
-            double x = ellipsoid::m_radius(0) * std::cos(u) * std::sin(v);
-            double y = ellipsoid::m_radius(1) * std::sin(u) * std::sin(v);
-            double z = ellipsoid::m_radius(2) * std::cos(v);
+            // Calculate original point.
+            p(0) = ellipsoid::m_radius(0) * std::cos(u) * std::sin(v);
+            p(1) = ellipsoid::m_radius(1) * std::sin(u) * std::sin(v);
+            p(2) = ellipsoid::m_radius(2) * std::cos(v);
 
-            points.push_back(QVector3D(x, z, y));
+            // Rotate point.
+            pr.noalias() = ellipsoid::m_r * p;
+
+            // Translate point.
+            pt = pr + ellipsoid::m_center;
+
+            points->append(QVector3D(pt(0), pt(2), pt(1)));
         }
     }
 }
