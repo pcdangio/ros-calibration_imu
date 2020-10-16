@@ -168,6 +168,43 @@ bool calibrator::save_calibration_yaml(std::string filepath)
 {
     // Create stream for writing to file.
     std::ofstream yaml_file(filepath.c_str());
+
+    if(!yaml_file)
+    {
+        ROS_ERROR_STREAM("error writing YAML calibration file (" << std::strerror(errno) << ")");
+        return false;
+    }
+
+    // Write transformation component.
+    yaml_file << "transformation: [";
+    yaml_file << std::setprecision(6);
+    for(uint8_t i = 0; i < 3; ++i)
+    {
+        for(uint8_t j = 0; j < 3; ++j)
+        {
+            yaml_file << calibrator::m_calibration_transform(i,j);
+            if((i+1)*(j+1) < 9)
+            {
+                yaml_file << ", ";
+            }
+        }
+    }
+    yaml_file << "]" << std::endl;
+
+    yaml_file << "translation: [";
+    for(uint8_t i = 0; i < 3; ++i)
+    {
+        yaml_file << calibrator::m_calibration_translation(i);
+        if(i < 2)
+        {
+            yaml_file << ", ";
+        }
+    }
+    yaml_file << "]";
+
+    yaml_file.close();
+
+    return true;
 }
 
 void calibrator::thread_worker()

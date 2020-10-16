@@ -200,7 +200,12 @@ void fmain::on_button_save_calibration_json_clicked()
     {
         // Save data.
         std::string json_file = save_dialog.selectedFiles().first().toStdString();
-        fmain::m_calibrator->save_calibration_json(json_file);
+        if(!fmain::m_calibrator->save_calibration_json(json_file))
+        {
+            // Display error.
+            QMessageBox message_box(QMessageBox::Icon::Warning, "", "Save JSON calibration failed, check ROS logs for reason.", QMessageBox::StandardButton::Ok);
+            message_box.exec();
+        }
     }
 }
 
@@ -220,6 +225,11 @@ void fmain::on_button_save_calibration_yaml_clicked()
     {
         // Save data.
         std::string yaml_file = save_dialog.selectedFiles().first().toStdString();
-        fmain::m_calibrator->save_calibration_yaml(yaml_file);
+        if(!fmain::m_calibrator->save_calibration_yaml(yaml_file))
+        {
+            // Display error.
+            QMessageBox message_box(QMessageBox::Icon::Warning, "", "Save YAML calibration failed, check ROS logs for reason.", QMessageBox::StandardButton::Ok);
+            message_box.exec();
+        }
     }
 }
