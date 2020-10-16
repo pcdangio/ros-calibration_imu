@@ -11,7 +11,7 @@ fmain::fmain(QWidget *parent)
 {
     // Set up UI.
     ui->setupUi(this);
-    ui->lineedit_field_strength->setValidator(new QIntValidator(0,500));
+    ui->lineedit_field_strength->setValidator(new QDoubleValidator(0.0,500.0,3));
     ui->progressbar_calibrate->setVisible(false);
 
     // Set up node handle.
@@ -93,6 +93,7 @@ void fmain::on_button_save_collection_clicked()
     save_dialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
     save_dialog.setFileMode(QFileDialog::FileMode::AnyFile);
     save_dialog.setNameFilter("ROS Bag Files (*.bag)");
+    save_dialog.setDefaultSuffix("bag");
     save_dialog.setViewMode(QFileDialog::ViewMode::Detail);
     save_dialog.setWindowTitle("Save Data");
 
@@ -185,10 +186,40 @@ void fmain::calibration_finished(bool success)
 
 void fmain::on_button_save_calibration_json_clicked()
 {
+    // Create save dialog.
+    QFileDialog save_dialog(this);
+    save_dialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+    save_dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+    save_dialog.setNameFilter("JSON file (*.json)");
+    save_dialog.setDefaultSuffix("json");
+    save_dialog.setViewMode(QFileDialog::ViewMode::Detail);
+    save_dialog.setWindowTitle("Save JSON Calibration");
 
+    // Run dialog.
+    if(save_dialog.exec())
+    {
+        // Save data.
+        std::string json_file = save_dialog.selectedFiles().first().toStdString();
+        fmain::m_calibrator->save_calibration_json(json_file);
+    }
 }
 
 void fmain::on_button_save_calibration_yaml_clicked()
 {
+    // Create save dialog.
+    QFileDialog save_dialog(this);
+    save_dialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+    save_dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+    save_dialog.setNameFilter("YAML file (*.yaml)");
+    save_dialog.setDefaultSuffix("yaml");
+    save_dialog.setViewMode(QFileDialog::ViewMode::Detail);
+    save_dialog.setWindowTitle("Save YAML Calibration");
 
+    // Run dialog.
+    if(save_dialog.exec())
+    {
+        // Save data.
+        std::string yaml_file = save_dialog.selectedFiles().first().toStdString();
+        fmain::m_calibrator->save_calibration_yaml(yaml_file);
+    }
 }

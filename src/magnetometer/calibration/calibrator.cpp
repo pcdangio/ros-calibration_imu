@@ -2,6 +2,9 @@
 
 #include <ros/node_handle.h>
 
+#include <fstream>
+#include <boost/property_tree/json_parser.hpp>
+
 using namespace magnetometer;
 
 calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface)
@@ -29,9 +32,9 @@ calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_inter
 
     // Set parameters.
     ros::NodeHandle private_handle("~");
-    calibrator::m_variables_center->p_max(private_handle.param<double>("calibration_max_center", 50.0));
+    calibrator::m_variables_center->p_max(private_handle.param<double>("calibration_max_center", 100.0));
     calibrator::m_variables_rotation->p_max(private_handle.param<double>("calibration_max_rotation", M_PI));
-    calibrator::m_variables_radius->p_max(private_handle.param<double>("calibration_max_radius", 50.0));
+    calibrator::m_variables_radius->p_max(private_handle.param<double>("calibration_max_radius", 100.0));
     calibrator::m_cost_objective->p_gradient_perturbation(private_handle.param<double>("calibration_gradient_perturbation", 0.000001));
     calibrator::m_solver.SetOption("max_cpu_time", private_handle.param<double>("calibration_max_time", 15.0));
 
@@ -119,11 +122,52 @@ std::string calibrator::print_calibration()
 }
 bool calibrator::save_calibration_json(std::string filepath)
 {
+    // Use boost property tree to build up JSON file.
+    boost::property_tree::ptree json_file;
 
+    // Populate transformation component.
+    // Write as row-stepped array.
+    boost::property_tree::ptree json_transformation;
+    for(uint8_t i = 0; i < 3; ++i)
+    {
+        for(uint8_t j = 0; j < 3; ++j)
+        {
+            std::stringstream ss;
+            ss << std::setprecision(6) << calibrator::m_calibration_transform(i,j);
+            json_transformation.push_back(boost::property_tree::ptree::value_type("", ss.str()));
+        }
+    }
+
+    // Populate translation component.
+    boost::property_tree::ptree json_translation;
+    for(uint8_t i = 0; i < 3; ++i)
+    {
+        std::stringstream ss;
+        ss << std::setprecision(6) << calibrator::m_calibration_translation(i);
+        json_translation.push_back(boost::property_tree::ptree::value_type("", ss.str()));
+    }
+
+    // Add components to JSON root.
+    json_file.add_child("transformation_matrix", json_transformation);
+    json_file.add_child("translation_vector", json_translation);
+
+    // Write JSON file.
+    try
+    {
+        boost::property_tree::write_json(filepath, json_file);
+    }
+    catch(const std::exception& e)
+    {
+        ROS_ERROR_STREAM("error writing JSON calibration file (" << e.what() << ")");
+        return false;
+    }
+
+    return true;
 }
 bool calibrator::save_calibration_yaml(std::string filepath)
 {
-
+    // Create stream for writing to file.
+    std::ofstream yaml_file(filepath.c_str());
 }
 
 void calibrator::thread_worker()

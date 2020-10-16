@@ -102,14 +102,14 @@
            <item>
             <widget class="QPushButton" name="button_save_collection">
              <property name="text">
-              <string>Save...</string>
+              <string>Save Bag...</string>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="button_load_collection">
              <property name="text">
-              <string>Load...</string>
+              <string>Load Bag...</string>
              </property>
             </widget>
            </item>
@@ -148,7 +148,7 @@
            <item>
             <widget class="QLineEdit" name="lineedit_field_strength">
              <property name="text">
-              <string>50</string>
+              <string>31.9386</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -178,7 +178,14 @@
           </widget>
          </item>
          <item>
-          <widget class="QPlainTextEdit" name="textedit_calibration"/>
+          <widget class="QPlainTextEdit" name="textedit_calibration">
+           <property name="font">
+            <font>
+             <family>Ubuntu Mono</family>
+             <pointsize>10</pointsize>
+            </font>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -261,19 +268,6 @@
          </item>
         </layout>
        </widget>
-      </item>
-      <item>
-       <spacer name="verticalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
       </item>
      </layout>
     </item>
