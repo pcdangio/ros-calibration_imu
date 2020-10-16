@@ -28,20 +28,22 @@ public:
     calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface);
     ~calibrator();
 
-    bool start(const ellipsoid& initial_guess);
+    bool start(const ellipsoid& initial_guess, double true_field_strength);
 
     void get_fit(ellipsoid& ellipse);
+    void get_truth(ellipsoid& ellipse);
     void get_calibration(Eigen::Matrix3d& m, Eigen::Vector3d& t);
 
 signals:
     void calibration_completed(bool success);
 
 private:
+    double m_true_field_strength;
+
     std::shared_ptr<ifopt::variables_center> m_variables_center;
     std::shared_ptr<ifopt::variables_rotation> m_variables_rotation;
     std::shared_ptr<ifopt::variables_radius> m_variables_radius;
     std::shared_ptr<ifopt::cost_objective> m_cost_objective;
-
     ifopt::Problem m_problem;
     ifopt::IpoptSolver m_solver;
 

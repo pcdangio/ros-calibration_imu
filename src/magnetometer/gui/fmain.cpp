@@ -22,15 +22,14 @@ fmain::fmain(QWidget *parent)
     fmain::m_calibrator = std::make_shared<magnetometer::calibrator>(fmain::m_data_interface);
 
     // Create graph instance.
-    fmain::m_graph = std::make_shared<magnetometer::graph>(fmain::m_data_interface);
+    fmain::m_graph = std::make_shared<magnetometer::graph>(fmain::m_data_interface, fmain::m_calibrator);
 
     // Connect slots.
-    connect(fmain::m_data_interface.get(), &magnetometer::data_interface::data_updated, fmain::m_graph.get(), &magnetometer::graph::update_uncalibrated_plot);
     connect(fmain::m_data_interface.get(), &magnetometer::data_interface::data_updated, this, &fmain::collection_updated);
-    connect(fmain::m_calibrator.get(), &magnetometer::calibrator::optimization_completed, this, &fmain::calibration_finished);
+    connect(fmain::m_calibrator.get(), &magnetometer::calibrator::calibration_completed, this, &fmain::calibration_finished);
 
     // Set up graph widget.
-    fmain::ui->layout_graph->addWidget(fmain::m_graph->get_widget());
+    fmain::ui->layout_main->addWidget(fmain::m_graph->get_widget());
 
     // Start ros spinner.
     connect(&(fmain::m_ros_spinner), &QTimer::timeout, this, &fmain::ros_spin);
@@ -129,6 +128,14 @@ void fmain::on_checkbox_graph_uncalibrated_stateChanged(int state)
 {
     fmain::m_graph->uncalibrated_visible(state == Qt::CheckState::Checked);
 }
+void fmain::on_checkbox_graph_fit_stateChanged(int state)
+{
+    fmain::m_graph->fit_visible(state == Qt::CheckState::Checked);
+}
+void fmain::on_checkbox_graph_truth_stateChanged(int state)
+{
+    fmain::m_graph->truth_visible(state == Qt::CheckState::Checked);
+}
 
 void fmain::on_button_calibrate_clicked()
 {
@@ -142,7 +149,7 @@ void fmain::on_button_calibrate_clicked()
     initial_guess.set_radius(initial_radius);
 
     // Start calibration routine.
-    fmain::m_calibrator->start(initial_guess);
+    fmain::m_calibrator->start(initial_guess, field_strength);
 }
 
 void fmain::calibration_finished(bool success)
@@ -150,5 +157,12 @@ void fmain::calibration_finished(bool success)
     ROS_ERROR_STREAM(success);
     magnetometer::ellipsoid ellipse;
     fmain::m_calibrator->get_fit(ellipse);
+    Eigen::Vector3d center, radius, rotation;
+    ellipse.get_center(center);
+    ellipse.get_radius(radius);
+    ellipse.get_rotation(rotation);
 
+    ROS_ERROR_STREAM("center:" << std::endl << center);
+    ROS_ERROR_STREAM("radius:" << std::endl << radius);
+    ROS_ERROR_STREAM("rotation:" << std::endl << rotation);
 }

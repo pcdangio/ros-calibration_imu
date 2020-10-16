@@ -2,10 +2,11 @@
 
 using namespace magnetometer;
 
-graph::graph(std::shared_ptr<magnetometer::data_interface>& data_interface)
+graph::graph(std::shared_ptr<magnetometer::data_interface>& data_interface, std::shared_ptr<magnetometer::calibrator>& calibrator)
 {
-    // Store data interface.
+    // Store components.
     graph::m_data_interface = data_interface;
+    graph::m_calibrator = calibrator;
 
     // Initialize scatter instance.
     graph::m_graph = new QtDataVisualization::Q3DScatter();
@@ -31,14 +32,30 @@ graph::graph(std::shared_ptr<magnetometer::data_interface>& data_interface)
     graph::m_series_uncalibrated_new->setItemSize(0.5);
     graph::m_graph->addSeries(graph::m_series_uncalibrated_new);
 
+    // Initialize fit series.
+    graph::m_series_fit = new QtDataVisualization::QScatter3DSeries();
+    graph::m_series_fit->setBaseColor(QColor(Qt::GlobalColor::cyan));
+    graph::m_series_fit->setItemSize(0.1);
+    graph::m_graph->addSeries(graph::m_series_fit);
+
     // Initialize calibrated series.
     graph::m_series_calibrated = new QtDataVisualization::QScatter3DSeries();
     graph::m_series_calibrated->setBaseColor(QColor(Qt::GlobalColor::green));
     graph::m_series_calibrated->setItemSize(0.1);
     graph::m_graph->addSeries(graph::m_series_calibrated);
 
+    // Initialize truth series.
+    graph::m_series_truth = new QtDataVisualization::QScatter3DSeries();
+    graph::m_series_truth->setBaseColor(QColor(Qt::GlobalColor::darkGreen));
+    graph::m_series_truth->setItemSize(0.1);
+    graph::m_graph->addSeries(graph::m_series_truth);
+
     // Initialize flags.
     graph::f_indicate_new_point = true;
+
+    // Connect slots.
+    connect(graph::m_data_interface.get(), &magnetometer::data_interface::data_updated, this, &magnetometer::graph::update_uncalibrated_plot);
+    connect(graph::m_calibrator.get(), &magnetometer::calibrator::calibration_completed, this, &magnetometer::graph::update_calibration_plots);
 }
 
 graph::~graph()
@@ -58,6 +75,19 @@ void graph::uncalibrated_visible(bool visible)
     graph::m_series_uncalibrated->setVisible(visible);
     graph::m_series_uncalibrated_new->setVisible(visible);
 }
+void graph::fit_visible(bool visible)
+{
+    graph::m_series_fit->setVisible(visible);
+}
+void graph::calibrated_visible(bool visible)
+{
+    graph::m_series_calibrated->setVisible(visible);
+}
+void graph::truth_visible(bool visible)
+{
+    graph::m_series_truth->setVisible(visible);
+}
+
 void graph::indicate_new_point(bool enabled)
 {
     bool update_series = (enabled != graph::f_indicate_new_point);
@@ -68,10 +98,7 @@ void graph::indicate_new_point(bool enabled)
         graph::update_uncalibrated_plot();
     }
 }
-void graph::calibrated_visible(bool visible)
-{
-    graph::m_series_calibrated->setVisible(visible);
-}
+
 
 void graph::update_uncalibrated_plot()
 {
@@ -104,8 +131,81 @@ void graph::update_uncalibrated_plot()
     // Add to series.
     graph::m_series_uncalibrated->dataProxy()->resetArray(uncalibrated_points);
     graph::m_series_uncalibrated_new->dataProxy()->resetArray(new_point);
-}
-void graph::update_calibrated_plot()
-{
 
+    // Update axis scales.
+    graph::autoscale();
+}
+void graph::update_calibration_plots()
+{
+    // Draw fit.
+    magnetometer::ellipsoid fit;
+    graph::m_calibrator->get_fit(fit);
+    QtDataVisualization::QScatterDataArray* fit_points = new QtDataVisualization::QScatterDataArray();
+    fit.draw(fit_points);
+    graph::m_series_fit->dataProxy()->resetArray(fit_points);
+
+    // Draw truth.
+    magnetometer::ellipsoid truth;
+    graph::m_calibrator->get_truth(truth);
+    QtDataVisualization::QScatterDataArray* truth_points = new QtDataVisualization::QScatterDataArray();
+    truth.draw(truth_points);
+    graph::m_series_truth->dataProxy()->resetArray(truth_points);
+
+    // Update axis scales.
+    graph::autoscale();
+}
+
+void graph::autoscale()
+{
+    // Determine min/max x/y/z values of all points in all series.
+    float min = std::numeric_limits<float>::infinity();
+    float max = -std::numeric_limits<float>::infinity();
+
+    // Update range through each series.
+    graph::update_range(graph::m_series_uncalibrated, min, max);
+    graph::update_range(graph::m_series_uncalibrated_new, min, max);
+    graph::update_range(graph::m_series_fit, min, max);
+    graph::update_range(graph::m_series_calibrated, min, max);
+    graph::update_range(graph::m_series_truth, min, max);
+
+    // Update axis ranges.
+    float margin = 5;
+    graph::m_graph->axisX()->setRange(min - margin, max + margin);
+    graph::m_graph->axisY()->setRange(min - margin, max + margin);
+    graph::m_graph->axisZ()->setRange(min - margin, max + margin);
+}
+void graph::update_range(QtDataVisualization::QScatter3DSeries* series, float &min, float &max)
+{
+    for(auto point = series->dataProxy()->array()->cbegin(); point != series->dataProxy()->array()->cend(); ++point)
+    {
+        // Update x range.
+        if(point->x() < min)
+        {
+            min = point->x();
+        }
+        else if(point->x() > max)
+        {
+            max = point->x();
+        }
+
+        // Update y range.
+        if(point->y() < min)
+        {
+            min = point->y();
+        }
+        else if(point->y() > max)
+        {
+            max = point->y();
+        }
+
+        // Update z range.
+        if(point->z() < min)
+        {
+            min = point->z();
+        }
+        else if(point->z() > max)
+        {
+            max = point->z();
+        }
+    }
 }

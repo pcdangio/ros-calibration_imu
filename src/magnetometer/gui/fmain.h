@@ -43,6 +43,10 @@ private slots:
 
     void on_button_calibrate_clicked();
 
+    void on_checkbox_graph_fit_stateChanged(int state);
+
+    void on_checkbox_graph_truth_stateChanged(int state);
+
 private:
     Ui::fmain *ui;
 

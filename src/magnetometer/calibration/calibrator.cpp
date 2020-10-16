@@ -6,6 +6,9 @@ using namespace magnetometer;
 
 calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface)
 {
+    // Initialize true field strength.
+    calibrator::m_true_field_strength = 0;
+
     // Set up variable sets.
     calibrator::m_variables_center = std::make_shared<ifopt::variables_center>();
     calibrator::m_variables_rotation = std::make_shared<ifopt::variables_rotation>();
@@ -39,11 +42,14 @@ calibrator::~calibrator()
     }
 }
 
-bool calibrator::start(const magnetometer::ellipsoid& initial_guess)
+bool calibrator::start(const magnetometer::ellipsoid& initial_guess, double true_field_strength)
 {
     // Check if thread is running.
     if(!calibrator::m_running)
     {
+        // Store ture field strength.
+        calibrator::m_true_field_strength = true_field_strength;
+
         // Initialize values.
         Eigen::Vector3d initial_center;
         initial_guess.get_center(initial_center);
@@ -74,6 +80,19 @@ void calibrator::get_fit(ellipsoid& ellipse)
     ellipse.set_center(calibrator::m_variables_center->GetValues());
     ellipse.set_radius(calibrator::m_variables_radius->GetValues());
     ellipse.set_rotation(calibrator::m_variables_rotation->GetValues());
+}
+void calibrator::get_truth(ellipsoid &ellipse)
+{
+    // Build truth ellipse.
+    Eigen::Vector3d center, rotation, radius;
+
+    center.setZero();
+    rotation.setZero();
+    radius.fill(calibrator::m_true_field_strength);
+
+    ellipse.set_center(center);
+    ellipse.set_rotation(rotation);
+    ellipse.set_radius(radius);
 }
 void calibrator::get_calibration(Eigen::Matrix3d& m, Eigen::Vector3d& t)
 {
