@@ -49,6 +49,10 @@ private slots:
 
     void on_checkbox_graph_calibrated_stateChanged(int state);
 
+    void on_button_save_calibration_json_clicked();
+
+    void on_button_save_calibration_yaml_clicked();
+
 private:
     Ui::fmain *ui;
 

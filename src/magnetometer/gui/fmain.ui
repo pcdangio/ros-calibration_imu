@@ -141,7 +141,7 @@
            <item>
             <widget class="QLabel" name="label_field_strength">
              <property name="text">
-              <string>Field Strength (uT)</string>
+              <string>True Field Strength (uT)</string>
              </property>
             </widget>
            </item>
@@ -163,6 +163,40 @@
             <string>Calibrate</string>
            </property>
           </widget>
+         </item>
+         <item>
+          <widget class="QProgressBar" name="progressbar_calibrate">
+           <property name="maximum">
+            <number>0</number>
+           </property>
+           <property name="value">
+            <number>-1</number>
+           </property>
+           <property name="textVisible">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPlainTextEdit" name="textedit_calibration"/>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <item>
+            <widget class="QPushButton" name="button_save_calibration_json">
+             <property name="text">
+              <string>Save JSON...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="button_save_calibration_yaml">
+             <property name="text">
+              <string>Save YAML...</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

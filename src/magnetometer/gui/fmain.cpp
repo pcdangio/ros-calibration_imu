@@ -3,6 +3,7 @@
 
 #include <QValidator>
 #include <QFileDialog>
+#include <QMessageBox>
 
 fmain::fmain(QWidget *parent)
     : QMainWindow(parent)
@@ -11,6 +12,7 @@ fmain::fmain(QWidget *parent)
     // Set up UI.
     ui->setupUi(this);
     ui->lineedit_field_strength->setValidator(new QIntValidator(0,500));
+    ui->progressbar_calibrate->setVisible(false);
 
     // Set up node handle.
     fmain::m_node = new ros::NodeHandle();
@@ -132,6 +134,10 @@ void fmain::on_checkbox_graph_fit_stateChanged(int state)
 {
     fmain::m_graph->fit_visible(state == Qt::CheckState::Checked);
 }
+void fmain::on_checkbox_graph_calibrated_stateChanged(int state)
+{
+    fmain::m_graph->calibrated_visible(state == Qt::CheckState::Checked);
+}
 void fmain::on_checkbox_graph_truth_stateChanged(int state)
 {
     fmain::m_graph->truth_visible(state == Qt::CheckState::Checked);
@@ -150,24 +156,39 @@ void fmain::on_button_calibrate_clicked()
 
     // Start calibration routine.
     fmain::m_calibrator->start(initial_guess, field_strength);
+
+    // Show the progress bar.
+    fmain::ui->progressbar_calibrate->setVisible(true);
+
+    // Clear any existing calibrations.
+    fmain::ui->textedit_calibration->clear();
 }
 
 void fmain::calibration_finished(bool success)
 {
-    ROS_ERROR_STREAM(success);
-    magnetometer::ellipsoid ellipse;
-    fmain::m_calibrator->get_fit(ellipse);
-    Eigen::Vector3d center, radius, rotation;
-    ellipse.get_center(center);
-    ellipse.get_radius(radius);
-    ellipse.get_rotation(rotation);
+    // Hide the progress bar.
+    fmain::ui->progressbar_calibrate->setVisible(false);
 
-    ROS_ERROR_STREAM("center:" << std::endl << center);
-    ROS_ERROR_STREAM("radius:" << std::endl << radius);
-    ROS_ERROR_STREAM("rotation:" << std::endl << rotation);
+    // Display the calibration if succeeded.
+    if(success)
+    {
+        // Display calibration.
+        fmain::ui->textedit_calibration->setPlainText(QString::fromStdString(fmain::m_calibrator->print_calibration()));
+    }
+    else
+    {
+        // Display error.
+        QMessageBox message_box(QMessageBox::Icon::Warning, "", "Calibration failed.", QMessageBox::StandardButton::Ok);
+        message_box.exec();
+    }
 }
 
-void fmain::on_checkbox_graph_calibrated_stateChanged(int state)
+void fmain::on_button_save_calibration_json_clicked()
 {
-    fmain::m_graph->calibrated_visible(state == Qt::CheckState::Checked);
+
+}
+
+void fmain::on_button_save_calibration_yaml_clicked()
+{
+
 }

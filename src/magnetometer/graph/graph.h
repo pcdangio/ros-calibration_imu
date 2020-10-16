@@ -35,7 +35,7 @@ public:
 
 public slots:
     void update_uncalibrated_plot();
-    void update_calibration_plots();
+    void update_calibration_plots(bool calibration_success);
 
 private:
     std::shared_ptr<magnetometer::data_interface> m_data_interface;

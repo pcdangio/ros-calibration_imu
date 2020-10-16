@@ -109,7 +109,13 @@ void calibrator::get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& tr
 }
 std::string calibrator::print_calibration()
 {
+    std::stringstream output;
+    output << "transformation:" << std::endl
+           << calibrator::m_calibration_transform << std::endl << std::endl
+           << "translation:" << std::endl
+           << calibrator::m_calibration_translation;
 
+    return output.str();
 }
 bool calibrator::save_calibration_json(std::string filepath)
 {

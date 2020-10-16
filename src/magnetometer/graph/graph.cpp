@@ -132,15 +132,8 @@ void graph::update_uncalibrated_plot()
     // Update axis scales.
     graph::autoscale();
 }
-void graph::update_calibration_plots()
+void graph::update_calibration_plots(bool calibration_success)
 {
-    // Draw fit.
-    magnetometer::ellipsoid fit;
-    graph::m_calibrator->get_fit(fit);
-    QtDataVisualization::QScatterDataArray* fit_points = new QtDataVisualization::QScatterDataArray();
-    fit.draw(fit_points);
-    graph::m_series_fit->dataProxy()->resetArray(fit_points);
-
     // Draw truth.
     magnetometer::ellipsoid truth;
     graph::m_calibrator->get_truth(truth);
@@ -148,27 +141,38 @@ void graph::update_calibration_plots()
     truth.draw(truth_points);
     graph::m_series_truth->dataProxy()->resetArray(truth_points);
 
-    // Draw calibrated points.
-    // Get calibration.
-    Eigen::Matrix3d transform;
-    Eigen::Vector3d translation;
-    graph::m_calibrator->get_calibration(transform, translation);
-    // Iterate through uncalibrated points to apply calibration and draw into series.
-    QtDataVisualization::QScatterDataArray* calibrated_points = new QtDataVisualization::QScatterDataArray();
-    uint32_t n_points = graph::m_data_interface->n_points();
-    Eigen::Vector3d p_u, p_c;
-    for(uint32_t i = 0; i < n_points; ++i)
+    // Check if calibration was successful.
+    if(calibration_success)
     {
-        // Grab point.
-        graph::m_data_interface->get_point(i, p_u);
-        // Calibrate point.
-        p_u += translation;
-        p_c.noalias() = transform * p_u;
-        // Add calibrated point to series.
-        calibrated_points->append(QVector3D(p_c(0), p_c(2), p_c(1)));
+        // Draw fit.
+        magnetometer::ellipsoid fit;
+        graph::m_calibrator->get_fit(fit);
+        QtDataVisualization::QScatterDataArray* fit_points = new QtDataVisualization::QScatterDataArray();
+        fit.draw(fit_points);
+        graph::m_series_fit->dataProxy()->resetArray(fit_points);
+
+        // Draw calibrated points.
+        // Get calibration.
+        Eigen::Matrix3d transform;
+        Eigen::Vector3d translation;
+        graph::m_calibrator->get_calibration(transform, translation);
+        // Iterate through uncalibrated points to apply calibration and draw into series.
+        QtDataVisualization::QScatterDataArray* calibrated_points = new QtDataVisualization::QScatterDataArray();
+        uint32_t n_points = graph::m_data_interface->n_points();
+        Eigen::Vector3d p_u, p_c;
+        for(uint32_t i = 0; i < n_points; ++i)
+        {
+            // Grab point.
+            graph::m_data_interface->get_point(i, p_u);
+            // Calibrate point.
+            p_u += translation;
+            p_c.noalias() = transform * p_u;
+            // Add calibrated point to series.
+            calibrated_points->append(QVector3D(p_c(0), p_c(2), p_c(1)));
+        }
+        // Add points to series.
+        graph::m_series_calibrated->dataProxy()->resetArray(calibrated_points);
     }
-    // Add points to series.
-    graph::m_series_calibrated->dataProxy()->resetArray(calibrated_points);
 
     // Update axis scales.
     graph::autoscale();
@@ -186,6 +190,13 @@ void graph::autoscale()
     graph::update_range(graph::m_series_fit, min, max);
     graph::update_range(graph::m_series_calibrated, min, max);
     graph::update_range(graph::m_series_truth, min, max);
+
+    // Check if a range was calculated.
+    if(std::isinf(min) || std::isinf(max))
+    {
+        // No range calculated, abort.
+        return;
+    }
 
     // Update axis ranges.
     float margin = 5;
