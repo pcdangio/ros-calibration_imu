@@ -57,7 +57,6 @@ graph::graph(std::shared_ptr<magnetometer::data_interface>& data_interface, std:
     connect(graph::m_data_interface.get(), &magnetometer::data_interface::data_updated, this, &magnetometer::graph::update_uncalibrated_plot);
     connect(graph::m_calibrator.get(), &magnetometer::calibrator::calibration_completed, this, &magnetometer::graph::update_calibration_plots);
 }
-
 graph::~graph()
 {
     // Clean up pointers.
@@ -68,7 +67,6 @@ QWidget* graph::get_widget()
 {
     return QWidget::createWindowContainer(graph::m_graph);
 }
-
 
 void graph::uncalibrated_visible(bool visible)
 {
@@ -98,7 +96,6 @@ void graph::indicate_new_point(bool enabled)
         graph::update_uncalibrated_plot();
     }
 }
-
 
 void graph::update_uncalibrated_plot()
 {
@@ -150,6 +147,28 @@ void graph::update_calibration_plots()
     QtDataVisualization::QScatterDataArray* truth_points = new QtDataVisualization::QScatterDataArray();
     truth.draw(truth_points);
     graph::m_series_truth->dataProxy()->resetArray(truth_points);
+
+    // Draw calibrated points.
+    // Get calibration.
+    Eigen::Matrix3d transform;
+    Eigen::Vector3d translation;
+    graph::m_calibrator->get_calibration(transform, translation);
+    // Iterate through uncalibrated points to apply calibration and draw into series.
+    QtDataVisualization::QScatterDataArray* calibrated_points = new QtDataVisualization::QScatterDataArray();
+    uint32_t n_points = graph::m_data_interface->n_points();
+    Eigen::Vector3d p_u, p_c;
+    for(uint32_t i = 0; i < n_points; ++i)
+    {
+        // Grab point.
+        graph::m_data_interface->get_point(i, p_u);
+        // Calibrate point.
+        p_u += translation;
+        p_c.noalias() = transform * p_u;
+        // Add calibrated point to series.
+        calibrated_points->append(QVector3D(p_c(0), p_c(2), p_c(1)));
+    }
+    // Add points to series.
+    graph::m_series_calibrated->dataProxy()->resetArray(calibrated_points);
 
     // Update axis scales.
     graph::autoscale();

@@ -166,3 +166,8 @@ void fmain::calibration_finished(bool success)
     ROS_ERROR_STREAM("radius:" << std::endl << radius);
     ROS_ERROR_STREAM("rotation:" << std::endl << rotation);
 }
+
+void fmain::on_checkbox_graph_calibrated_stateChanged(int state)
+{
+    fmain::m_graph->calibrated_visible(state == Qt::CheckState::Checked);
+}

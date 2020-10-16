@@ -23,6 +23,10 @@ calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_inter
     calibrator::m_problem.AddVariableSet(calibrator::m_variables_radius);
     calibrator::m_problem.AddCostSet(calibrator::m_cost_objective);
 
+    // Initialize calibration.
+    calibrator::m_calibration_transform.setIdentity();
+    calibrator::m_calibration_translation.setZero();
+
     // Set parameters.
     ros::NodeHandle private_handle("~");
     calibrator::m_variables_center->p_max(private_handle.param<double>("calibration_max_center", 50.0));
@@ -63,6 +67,10 @@ bool calibrator::start(const magnetometer::ellipsoid& initial_guess, double true
         initial_guess.get_rotation(initial_rotation);
         calibrator::m_variables_rotation->SetVariables(initial_rotation);
 
+        // Reset calibration.
+        calibrator::m_calibration_transform.setIdentity();
+        calibrator::m_calibration_translation.setZero();
+
         // Start optimization thread to generate fit.
         calibrator::m_thread = boost::thread(&calibrator::thread_worker, this);
         return true;
@@ -73,15 +81,14 @@ bool calibrator::start(const magnetometer::ellipsoid& initial_guess, double true
     }
 }
 
-
-void calibrator::get_fit(ellipsoid& ellipse)
+void calibrator::get_fit(ellipsoid& ellipsoid)
 {
     // Return ellipsoid parameters.
-    ellipse.set_center(calibrator::m_variables_center->GetValues());
-    ellipse.set_radius(calibrator::m_variables_radius->GetValues());
-    ellipse.set_rotation(calibrator::m_variables_rotation->GetValues());
+    ellipsoid.set_center(calibrator::m_variables_center->GetValues());
+    ellipsoid.set_radius(calibrator::m_variables_radius->GetValues());
+    ellipsoid.set_rotation(calibrator::m_variables_rotation->GetValues());
 }
-void calibrator::get_truth(ellipsoid &ellipse)
+void calibrator::get_truth(ellipsoid &ellipsoid)
 {
     // Build truth ellipse.
     Eigen::Vector3d center, rotation, radius;
@@ -90,25 +97,28 @@ void calibrator::get_truth(ellipsoid &ellipse)
     rotation.setZero();
     radius.fill(calibrator::m_true_field_strength);
 
-    ellipse.set_center(center);
-    ellipse.set_rotation(rotation);
-    ellipse.set_radius(radius);
+    ellipsoid.set_center(center);
+    ellipsoid.set_rotation(rotation);
+    ellipsoid.set_radius(radius);
 }
-void calibrator::get_calibration(Eigen::Matrix3d& m, Eigen::Vector3d& t)
+
+void calibrator::get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& translation)
 {
-    
-    // desired_radius = 3;
-    // s = eye(3);
-    // s(1,1) = desired_radius / result(7);
-    // s(2,2) = desired_radius / result(8);
-    // s(3,3) = desired_radius / result(9);
-    // r = rotation_matrix(result(1), result(2), result(3));
-
-    // h = eye(4);
-    // h(1:3,1:3) = r*s*r';
-    // h(1:3,4) = -result(7:9)';
+    transform = calibrator::m_calibration_transform;
+    translation = calibrator::m_calibration_translation;
 }
+std::string calibrator::print_calibration()
+{
 
+}
+bool calibrator::save_calibration_json(std::string filepath)
+{
+
+}
+bool calibrator::save_calibration_yaml(std::string filepath)
+{
+
+}
 
 void calibrator::thread_worker()
 {
@@ -118,8 +128,41 @@ void calibrator::thread_worker()
     // Run solver.
     calibrator::m_solver.Solve(calibrator::m_problem);
 
+    // Check solve status.
+    bool solved = calibrator::m_solver.GetReturnStatus() == 0;
+
+    // If solved, calculate calibration.
+    if(solved)
+    {
+        // Get fit ellipse.
+        ellipsoid fit;
+        calibrator::get_fit(fit);
+
+        // Calculate scale transform.
+        Eigen::Vector3d fit_radius;
+        fit.get_radius(fit_radius);
+        Eigen::Matrix3d scale;
+        scale.setIdentity();
+        scale(0,0) = calibrator::m_true_field_strength / fit_radius(0);
+        scale(1,1) = calibrator::m_true_field_strength / fit_radius(1);
+        scale(2,2) = calibrator::m_true_field_strength / fit_radius(2);
+
+        // Get rotation and transpose matrices.
+        Eigen::Matrix3d rotation, rotation_t;
+        fit.get_r(rotation);
+        fit.get_rt(rotation_t);
+
+        // Calculate and set transform matrix.
+        calibrator::m_calibration_transform.noalias() = rotation * scale * rotation_t;
+
+        // Set translation vector.
+        Eigen::Vector3d center;
+        fit.get_center(center);
+        calibrator::m_calibration_translation = -center;
+    }
+
     // Signal completion.
-    calibrator::calibration_completed(calibrator::m_solver.GetReturnStatus() == 0);
+    calibrator::calibration_completed(solved);
 
     // Flag thread as finished.
     calibrator::m_running = false;

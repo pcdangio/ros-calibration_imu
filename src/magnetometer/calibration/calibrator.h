@@ -30,15 +30,23 @@ public:
 
     bool start(const ellipsoid& initial_guess, double true_field_strength);
 
-    void get_fit(ellipsoid& ellipse);
-    void get_truth(ellipsoid& ellipse);
-    void get_calibration(Eigen::Matrix3d& m, Eigen::Vector3d& t);
+    void get_fit(ellipsoid& ellipsoid);
+    void get_truth(ellipsoid& ellipsoid);
+
+    void get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& translation);
+    std::string print_calibration();
+    bool save_calibration_json(std::string filepath);
+    bool save_calibration_yaml(std::string filepath);
 
 signals:
     void calibration_completed(bool success);
 
 private:
     double m_true_field_strength;
+
+    boost::thread m_thread;
+    void thread_worker();
+    std::atomic<bool> m_running;
 
     std::shared_ptr<ifopt::variables_center> m_variables_center;
     std::shared_ptr<ifopt::variables_rotation> m_variables_rotation;
@@ -47,9 +55,8 @@ private:
     ifopt::Problem m_problem;
     ifopt::IpoptSolver m_solver;
 
-    boost::thread m_thread;
-    void thread_worker();
-    std::atomic<bool> m_running;
+    Eigen::Matrix3d m_calibration_transform;
+    Eigen::Vector3d m_calibration_translation;
 };
 
 }
