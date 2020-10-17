@@ -11,7 +11,9 @@ fmain::fmain(QWidget *parent)
 {
     // Set up UI.
     ui->setupUi(this);
-    ui->lineedit_field_strength->setValidator(new QDoubleValidator(0.0,500.0,3));
+    QDoubleValidator* validator_true_field_strength = new QDoubleValidator(0.0,100.0,6);
+    validator_true_field_strength->setNotation(QDoubleValidator::StandardNotation);
+    ui->lineedit_field_strength->setValidator(validator_true_field_strength);
     ui->progressbar_calibrate->setVisible(false);
 
     // Set up node handle.
