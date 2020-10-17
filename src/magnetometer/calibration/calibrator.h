@@ -42,6 +42,9 @@ signals:
     void calibration_completed(bool success);
 
 private:
+    /// \brief Scale factor for converting from T to uT.
+    const double m_scale_factor = 1000000.0;
+
     double m_true_field_strength;
 
     boost::thread m_thread;

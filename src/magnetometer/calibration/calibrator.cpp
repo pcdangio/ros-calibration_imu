@@ -36,7 +36,7 @@ calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_inter
     calibrator::m_variables_rotation->p_max(private_handle.param<double>("calibration_max_rotation", M_PI));
     calibrator::m_variables_radius->p_max(private_handle.param<double>("calibration_max_radius", 100.0));
     calibrator::m_cost_objective->p_gradient_perturbation(private_handle.param<double>("calibration_gradient_perturbation", 0.000001));
-    calibrator::m_solver.SetOption("max_cpu_time", private_handle.param<double>("calibration_max_time", 15.0));
+    calibrator::m_solver.SetOption("max_cpu_time", private_handle.param<double>("calibration_max_time", 30.0));
 
     // Initialize thread.
     calibrator::m_running = false;
@@ -112,11 +112,17 @@ void calibrator::get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& tr
 }
 std::string calibrator::print_calibration()
 {
+    // Scale the translation component.
+    Eigen::Vector3d scaled_translation = calibrator::m_calibration_translation / calibrator::m_scale_factor;
+
+    // Write to string.
     std::stringstream output;
+    output << std::setprecision(6) << std::fixed;
     output << "transformation:" << std::endl
-           << calibrator::m_calibration_transform << std::endl << std::endl
+           << calibrator::m_calibration_transform << std::endl << std::endl;
+    output << std::setprecision(10)
            << "translation:" << std::endl
-           << calibrator::m_calibration_translation;
+           << scaled_translation;
 
     return output.str();
 }
@@ -133,17 +139,18 @@ bool calibrator::save_calibration_json(std::string filepath)
         for(uint8_t j = 0; j < 3; ++j)
         {
             std::stringstream ss;
-            ss << std::setprecision(6) << calibrator::m_calibration_transform(i,j);
+            ss << std::setprecision(6) << std::fixed << calibrator::m_calibration_transform(i,j);
             json_transformation.push_back(boost::property_tree::ptree::value_type("", ss.str()));
         }
     }
 
     // Populate translation component.
+    // Apply scaling.
     boost::property_tree::ptree json_translation;
     for(uint8_t i = 0; i < 3; ++i)
     {
         std::stringstream ss;
-        ss << std::setprecision(6) << calibrator::m_calibration_translation(i);
+        ss << std::setprecision(10) << std::fixed << (calibrator::m_calibration_translation(i) / calibrator::m_scale_factor);
         json_translation.push_back(boost::property_tree::ptree::value_type("", ss.str()));
     }
 
@@ -177,7 +184,7 @@ bool calibrator::save_calibration_yaml(std::string filepath)
 
     // Write transformation component.
     yaml_file << "transformation: [";
-    yaml_file << std::setprecision(6);
+    yaml_file << std::setprecision(6) << std::fixed;
     for(uint8_t i = 0; i < 3; ++i)
     {
         for(uint8_t j = 0; j < 3; ++j)
@@ -191,10 +198,11 @@ bool calibrator::save_calibration_yaml(std::string filepath)
     }
     yaml_file << "]" << std::endl;
 
+    yaml_file << std::setprecision(10);
     yaml_file << "translation: [";
     for(uint8_t i = 0; i < 3; ++i)
     {
-        yaml_file << calibrator::m_calibration_translation(i);
+        yaml_file << (calibrator::m_calibration_translation(i) / calibrator::m_scale_factor);
         if(i < 2)
         {
             yaml_file << ", ";
