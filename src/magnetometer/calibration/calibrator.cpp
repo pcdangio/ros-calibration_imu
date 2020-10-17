@@ -117,6 +117,7 @@ std::string calibrator::print_calibration()
 
     // Write to string.
     std::stringstream output;
+    output << "calibration units: tesla (T)" << std::endl << std::endl;
     output << std::setprecision(6) << std::fixed;
     output << "transformation:" << std::endl
            << calibrator::m_calibration_transform << std::endl << std::endl;
