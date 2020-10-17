@@ -23,31 +23,31 @@ graph::graph(std::shared_ptr<magnetometer::data_interface>& data_interface, std:
     // Initialize uncalibrated series.
     graph::m_series_uncalibrated = new QtDataVisualization::QScatter3DSeries();
     graph::m_series_uncalibrated->setBaseColor(QColor(Qt::GlobalColor::blue));
-    graph::m_series_uncalibrated->setItemSize(0.1);
+    graph::m_series_uncalibrated->setItemSize(0.075);
     graph::m_graph->addSeries(graph::m_series_uncalibrated);
 
     // Initialize uncalibrated newest series.
     graph::m_series_uncalibrated_new = new QtDataVisualization::QScatter3DSeries();
     graph::m_series_uncalibrated_new->setBaseColor(QColor(Qt::GlobalColor::red));
-    graph::m_series_uncalibrated_new->setItemSize(0.5);
+    graph::m_series_uncalibrated_new->setItemSize(0.2);
     graph::m_graph->addSeries(graph::m_series_uncalibrated_new);
 
     // Initialize fit series.
     graph::m_series_fit = new QtDataVisualization::QScatter3DSeries();
     graph::m_series_fit->setBaseColor(QColor(Qt::GlobalColor::cyan));
-    graph::m_series_fit->setItemSize(0.1);
+    graph::m_series_fit->setItemSize(0.075);
     graph::m_graph->addSeries(graph::m_series_fit);
 
     // Initialize calibrated series.
     graph::m_series_calibrated = new QtDataVisualization::QScatter3DSeries();
-    graph::m_series_calibrated->setBaseColor(QColor(Qt::GlobalColor::green));
-    graph::m_series_calibrated->setItemSize(0.1);
+    graph::m_series_calibrated->setBaseColor(QColor(Qt::GlobalColor::darkGreen));
+    graph::m_series_calibrated->setItemSize(0.075);
     graph::m_graph->addSeries(graph::m_series_calibrated);
 
     // Initialize truth series.
     graph::m_series_truth = new QtDataVisualization::QScatter3DSeries();
-    graph::m_series_truth->setBaseColor(QColor(Qt::GlobalColor::darkGreen));
-    graph::m_series_truth->setItemSize(0.1);
+    graph::m_series_truth->setBaseColor(QColor(Qt::GlobalColor::green));
+    graph::m_series_truth->setItemSize(0.075);
     graph::m_graph->addSeries(graph::m_series_truth);
 
     // Initialize flags.
