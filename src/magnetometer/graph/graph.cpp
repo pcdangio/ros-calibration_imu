@@ -143,6 +143,9 @@ void graph::update_calibration_plots(bool calibration_success)
         // Draw fit.
         Eigen::Vector3d fit_center, fit_radius, fit_rotation;
         graph::m_calibrator->get_fit(fit_center, fit_radius, fit_rotation);
+        // Scale center and radius.
+        fit_center *= graph::m_field_scale;
+        fit_radius *= graph::m_field_scale;
         magnetometer::ellipsoid fit;
         fit.set_center(fit_center);
         fit.set_radius(fit_radius);
@@ -167,6 +170,8 @@ void graph::update_calibration_plots(bool calibration_success)
             // Calibrate point.
             p_u += translation;
             p_c.noalias() = transform * p_u;
+            // Scale point.
+            p_c *= graph::m_field_scale;
             // Add calibrated point to series.
             calibrated_points->append(QVector3D(p_c(0), p_c(2), p_c(1)));
         }
