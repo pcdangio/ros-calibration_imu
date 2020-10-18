@@ -36,7 +36,7 @@ ifopt::Component::VecBound variables_rotation::GetBounds() const
 }
 
 // PARAMETERS
-void variables_rotation::p_max(double value)
+void variables_rotation::set_max(double value)
 {
     variables_rotation::max = value;
 }

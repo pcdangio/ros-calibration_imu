@@ -22,7 +22,7 @@ namespace ifopt
         // PARAMETERS
         /// \brief Sets the maximum allowable rotation.
         /// \param value The value to set.
-        void p_max(double value);
+        void set_max(double value);
 
     private:
         // VARIABLES

@@ -10,8 +10,8 @@ variables_center::variables_center()
     variables_center::y = 0.0;
     variables_center::z = 0.0;
 
-    variables_center::min = -100;
-    variables_center::max = 100;
+    variables_center::min.fill(-100);
+    variables_center::max.fill(100);
 }
 
 // OVERRIDES
@@ -30,9 +30,9 @@ Eigen::VectorXd variables_center::GetValues() const
 ifopt::Component::VecBound variables_center::GetBounds() const
 {
     ifopt::Component::VecBound bounds(3);
-    bounds.at(0) = ifopt::Bounds(variables_center::min, variables_center::max);
-    bounds.at(1) = ifopt::Bounds(variables_center::min, variables_center::max);
-    bounds.at(2) = ifopt::Bounds(variables_center::min, variables_center::max);
+    bounds.at(0) = ifopt::Bounds(variables_center::min(0), variables_center::max(0));
+    bounds.at(1) = ifopt::Bounds(variables_center::min(1), variables_center::max(1));
+    bounds.at(2) = ifopt::Bounds(variables_center::min(2), variables_center::max(2));
 
     return bounds;
 }
@@ -46,7 +46,7 @@ void variables_center::center_vector(Eigen::Vector3d& c) const
 }
 
 // PARAMETERS
-void variables_center::set_range(double min, double max)
+void variables_center::set_range(const Eigen::Vector3d& min, const Eigen::Vector3d& max)
 {
     variables_center::min = min;
     variables_center::max = max;
