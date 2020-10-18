@@ -207,18 +207,19 @@ void calibrator::thread_worker()
     {
         for(uint8_t i = 0; i < 3; ++i)
         {
-            if(new_point(i) < bb_min(i))
+            if((*point)(i) < bb_min(i))
             {
-                bb_min(i) = new_point(i);
+                bb_min(i) = (*point)(i);
             }
-            else if(new_point(i) > bb_max(i))
+            else if((*point)(i) > bb_max(i))
             {
-                bb_max(i) = new_point(i);
+                bb_max(i) = (*point)(i);
             }
         }
     }
     // Calculate bounding box center.
     Eigen::Vector3d bb_width = bb_max - bb_min;
+    Eigen::Vector3d bb_radius = bb_width / 2.0;
     Eigen::Vector3d bb_center = bb_max + bb_min;
     bb_center /= 2.0;
 
@@ -233,8 +234,8 @@ void calibrator::thread_worker()
     variables_center->SetVariables(bb_center);
     variables_center->set_range(bb_center - bb_width*0.25, bb_center + bb_width*0.25);
     // Radius
-    variables_radius->SetVariables(bb_width / 2.0);
-    variables_radius->set_range(bb_width * 0.5, bb_width * 1.5);
+    variables_radius->SetVariables(bb_radius);
+    variables_radius->set_range(bb_radius * 0.5, bb_radius * 1.5);
     // Rotation
     variables_rotation->set_max(M_PI);
 
