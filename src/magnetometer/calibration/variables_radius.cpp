@@ -9,6 +9,8 @@ variables_radius::variables_radius()
     variables_radius::a = 30.0;
     variables_radius::b = 30.0;
     variables_radius::c = 30.0;
+
+    variables_radius::min = 0.0;
     variables_radius::max = 50.0;
 }
 
@@ -28,9 +30,9 @@ Eigen::VectorXd variables_radius::GetValues() const
 ifopt::Component::VecBound variables_radius::GetBounds() const
 {
     ifopt::Component::VecBound bounds(3);
-    bounds.at(0) = ifopt::Bounds(0, variables_radius::max);
-    bounds.at(1) = ifopt::Bounds(0, variables_radius::max);
-    bounds.at(2) = ifopt::Bounds(0, variables_radius::max);
+    bounds.at(0) = ifopt::Bounds(variables_radius::min, variables_radius::max);
+    bounds.at(1) = ifopt::Bounds(variables_radius::min, variables_radius::max);
+    bounds.at(2) = ifopt::Bounds(variables_radius::min, variables_radius::max);
 
     return bounds;
 }
@@ -45,7 +47,8 @@ void variables_radius::radius_matrix(Eigen::Matrix3d& e)
 }
 
 // PARAMETERS
-void variables_radius::p_max(double value)
+void variables_radius::set_range(double min, double max)
 {
-    variables_radius::max = value;
+    variables_radius::min = min;
+    variables_radius::max = max;
 }

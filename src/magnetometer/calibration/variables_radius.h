@@ -25,9 +25,10 @@ namespace ifopt
         void radius_matrix(Eigen::Matrix3d& e);
 
         // PROPERTIES
-        /// \brief Sets the max allowable radius size.
-        /// \param value The value to set.
-        void p_max(double value);
+        /// \brief Sets the allowable range of center values.
+        /// \param min The minimum allowable value.
+        /// \param max The maximum allowable value.
+        void set_range(double min, double max);
 
     private:
         // VARIABLES
@@ -39,7 +40,9 @@ namespace ifopt
         double c;
 
         // BOUNDS
-        /// \brief The max allowable radius.
+        /// \brief Stores the minimum acceptable range of center values.
+        double min;
+        /// \brief Stores the maximum acceptable range of center values.
         double max;
     };
 }
