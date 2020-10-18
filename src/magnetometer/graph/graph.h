@@ -36,8 +36,11 @@ public:
 public slots:
     void update_uncalibrated_plot();
     void update_calibration_plots(bool calibration_success);
+    void update_truth_plot(double true_field_strength);
 
 private:
+    const double m_field_scale = 1000000;
+
     std::shared_ptr<magnetometer::data_interface> m_data_interface;
     std::shared_ptr<magnetometer::calibrator> m_calibrator;
 

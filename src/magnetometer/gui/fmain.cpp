@@ -148,17 +148,14 @@ void fmain::on_checkbox_graph_truth_stateChanged(int state)
 
 void fmain::on_button_calibrate_clicked()
 {
-    // Get specified field strength (in uT).
-    double field_strength = fmain::ui->lineedit_field_strength->text().toDouble();
+    // Get specified field strength (in T).
+    double field_strength = fmain::ui->lineedit_field_strength->text().toDouble() / 1000000.0;
 
-    // Create initial guess.
-    magnetometer::ellipsoid initial_guess;
-    Eigen::Vector3d initial_radius;
-    initial_radius.fill(field_strength);
-    initial_guess.set_radius(initial_radius);
+    // TEMPORARY
+    fmain::m_graph->update_truth_plot(field_strength);
 
     // Start calibration routine.
-    fmain::m_calibrator->start(initial_guess, field_strength);
+    fmain::m_calibrator->start(field_strength);
 
     // Show the progress bar.
     fmain::ui->progressbar_calibrate->setVisible(true);

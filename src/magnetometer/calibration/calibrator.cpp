@@ -12,31 +12,12 @@ calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_inter
     // Initialize true field strength.
     calibrator::m_true_field_strength = 0;
 
-    // Set up variable sets.
-    calibrator::m_variables_center = std::make_shared<ifopt::variables_center>();
-    calibrator::m_variables_rotation = std::make_shared<ifopt::variables_rotation>();
-    calibrator::m_variables_radius = std::make_shared<ifopt::variables_radius>();
-
-    // Set up cost term.
-    calibrator::m_cost_objective = std::make_shared<ifopt::cost_objective>(data_interface);
-
-    // Set up problem.
-    calibrator::m_problem.AddVariableSet(calibrator::m_variables_center);
-    calibrator::m_problem.AddVariableSet(calibrator::m_variables_rotation);
-    calibrator::m_problem.AddVariableSet(calibrator::m_variables_radius);
-    calibrator::m_problem.AddCostSet(calibrator::m_cost_objective);
+    // Store data interface.
+    calibrator::m_data_interface = data_interface;
 
     // Initialize calibration.
     calibrator::m_calibration_transform.setIdentity();
     calibrator::m_calibration_translation.setZero();
-
-    // Set parameters.
-    ros::NodeHandle private_handle("~");
-    calibrator::m_variables_center->p_max(private_handle.param<double>("calibration_max_center", 100.0));
-    calibrator::m_variables_rotation->p_max(private_handle.param<double>("calibration_max_rotation", M_PI));
-    calibrator::m_variables_radius->p_max(private_handle.param<double>("calibration_max_radius", 100.0));
-    calibrator::m_cost_objective->p_gradient_perturbation(private_handle.param<double>("calibration_gradient_perturbation", 0.000001));
-    calibrator::m_solver.SetOption("max_cpu_time", private_handle.param<double>("calibration_max_time", 30.0));
 
     // Initialize thread.
     calibrator::m_running = false;
@@ -49,26 +30,18 @@ calibrator::~calibrator()
     }
 }
 
-bool calibrator::start(const magnetometer::ellipsoid& initial_guess, double true_field_strength)
+bool calibrator::start(double true_field_strength)
 {
     // Check if thread is running.
     if(!calibrator::m_running)
     {
-        // Store ture field strength.
+        // Store true field strength.
         calibrator::m_true_field_strength = true_field_strength;
 
-        // Initialize values.
-        Eigen::Vector3d initial_center;
-        initial_guess.get_center(initial_center);
-        calibrator::m_variables_center->SetVariables(initial_center);
-
-        Eigen::Vector3d initial_radius;
-        initial_guess.get_radius(initial_radius);
-        calibrator::m_variables_radius->SetVariables(initial_radius);
-
-        Eigen::Vector3d initial_rotation;
-        initial_guess.get_rotation(initial_rotation);
-        calibrator::m_variables_rotation->SetVariables(initial_rotation);
+        // Reset fit.
+        calibrator::m_fit_center.setZero();
+        calibrator::m_fit_radius.setZero();
+        calibrator::m_fit_rotation.setZero();
 
         // Reset calibration.
         calibrator::m_calibration_transform.setIdentity();
@@ -84,36 +57,23 @@ bool calibrator::start(const magnetometer::ellipsoid& initial_guess, double true
     }
 }
 
-void calibrator::get_fit(ellipsoid& ellipsoid)
+void calibrator::get_fit(Eigen::Vector3d& center, Eigen::Vector3d& radius, Eigen::Vector3d& rotation)
 {
     // Return ellipsoid parameters.
-    ellipsoid.set_center(calibrator::m_variables_center->GetValues());
-    ellipsoid.set_radius(calibrator::m_variables_radius->GetValues());
-    ellipsoid.set_rotation(calibrator::m_variables_rotation->GetValues());
+    center = calibrator::m_fit_center;
+    radius = calibrator::m_fit_radius;
+    rotation = calibrator::m_fit_rotation;
 }
-void calibrator::get_truth(ellipsoid &ellipsoid)
-{
-    // Build truth ellipse.
-    Eigen::Vector3d center, rotation, radius;
-
-    center.setZero();
-    rotation.setZero();
-    radius.fill(calibrator::m_true_field_strength);
-
-    ellipsoid.set_center(center);
-    ellipsoid.set_rotation(rotation);
-    ellipsoid.set_radius(radius);
-}
-
 void calibrator::get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& translation)
 {
     transform = calibrator::m_calibration_transform;
     translation = calibrator::m_calibration_translation;
 }
+
 std::string calibrator::print_calibration()
 {
     // Scale the translation component.
-    Eigen::Vector3d scaled_translation = calibrator::m_calibration_translation / calibrator::m_scale_factor;
+    Eigen::Vector3d scaled_translation = calibrator::m_calibration_translation;
 
     // Write to string.
     std::stringstream output;
@@ -151,7 +111,7 @@ bool calibrator::save_calibration_json(std::string filepath)
     for(uint8_t i = 0; i < 3; ++i)
     {
         std::stringstream ss;
-        ss << std::setprecision(10) << std::fixed << (calibrator::m_calibration_translation(i) / calibrator::m_scale_factor);
+        ss << std::setprecision(10) << std::fixed << (calibrator::m_calibration_translation(i));
         json_translation.push_back(boost::property_tree::ptree::value_type("", ss.str()));
     }
 
@@ -203,7 +163,7 @@ bool calibrator::save_calibration_yaml(std::string filepath)
     yaml_file << "translation: [";
     for(uint8_t i = 0; i < 3; ++i)
     {
-        yaml_file << (calibrator::m_calibration_translation(i) / calibrator::m_scale_factor);
+        yaml_file << (calibrator::m_calibration_translation(i));
         if(i < 2)
         {
             yaml_file << ", ";
@@ -221,18 +181,95 @@ void calibrator::thread_worker()
     // Flag thread as running.
     calibrator::m_running = true;
 
+    // Create a local copy of points to fit from the data interface.
+    std::shared_ptr<std::vector<Eigen::Vector3d>> data_points = std::make_shared<std::vector<Eigen::Vector3d>>();
+
+    // Copy the points locally and scale them.
+    data_points->clear();
+    Eigen::Vector3d new_point;
+    for(uint32_t i = 0; i < calibrator::m_data_interface->n_points(); ++i)
+    {
+        // Grab point from data interface.
+        calibrator::m_data_interface->get_point(i, new_point);
+
+        // Scale point.
+        new_point *= calibrator::m_field_scale;
+
+        // Add point.
+        data_points->push_back(new_point);
+    }
+
+    // Calculate the bounding box and it's parameters.
+    Eigen::Vector3d bb_min, bb_max;
+    bb_min.fill(std::numeric_limits<double>::infinity());
+    bb_max.fill(-std::numeric_limits<double>::infinity());
+    for(auto point = data_points->cbegin(); point != data_points->cend(); ++point)
+    {
+        for(uint8_t i = 0; i < 3; ++i)
+        {
+            if((*point)(i) < bb_min(i))
+            {
+                bb_min(i) = (*point)(i);
+            }
+            else if((*point)(i) > bb_max(i))
+            {
+                bb_max(i) = (*point)(i);
+            }
+        }
+    }
+    // Calculate bounding box center.
+    Eigen::Vector3d bb_width = bb_max - bb_min;
+    Eigen::Vector3d bb_radius = bb_width / 2.0;
+    Eigen::Vector3d bb_center = bb_max + bb_min;
+    bb_center /= 2.0;
+
+    // Set up the optimization components.
+    std::shared_ptr<ifopt::variables_center> variables_center = std::make_shared<ifopt::variables_center>();
+    std::shared_ptr<ifopt::variables_rotation> variables_rotation = std::make_shared<ifopt::variables_rotation>();
+    std::shared_ptr<ifopt::variables_radius> variables_radius = std::make_shared<ifopt::variables_radius>();
+    std::shared_ptr<ifopt::cost_objective> cost_objective = std::make_shared<ifopt::cost_objective>(data_points);
+
+    // Set initial guess and range for each variable.
+    // Center
+    variables_center->SetVariables(bb_center);
+    variables_center->set_range(bb_center - bb_width*0.25, bb_center + bb_width*0.25);
+    // Radius
+    variables_radius->SetVariables(bb_radius);
+    variables_radius->set_range(bb_radius * 0.5, bb_radius * 1.5);
+    // Rotation
+    variables_rotation->set_max(M_PI);
+
+    // Set component parameters.
+    cost_objective->p_gradient_perturbation(0.000001);
+
+    // Set up the optimization problem.
+    ifopt::Problem problem;
+    problem.AddVariableSet(variables_center);
+    problem.AddVariableSet(variables_rotation);
+    problem.AddVariableSet(variables_radius);
+    problem.AddCostSet(cost_objective);
+
     // Run solver.
-    calibrator::m_solver.Solve(calibrator::m_problem);
+    ifopt::IpoptSolver solver;
+    solver.SetOption("max_cpu_time", 30.0);
+    solver.Solve(problem);
 
     // Check solve status.
-    bool solved = calibrator::m_solver.GetReturnStatus() == 0;
+    bool solved = solver.GetReturnStatus() == 0;
 
     // If solved, calculate calibration.
     if(solved)
     {
-        // Get fit ellipse.
+        // Extract and scale fit parameters.
+        calibrator::m_fit_center = variables_center->GetValues() / calibrator::m_field_scale;
+        calibrator::m_fit_radius = variables_radius->GetValues() / calibrator::m_field_scale;
+        calibrator::m_fit_rotation = variables_rotation->GetValues();
+
+        // Build up a fit ellipse.
         ellipsoid fit;
-        calibrator::get_fit(fit);
+        fit.set_center(calibrator::m_fit_center);
+        fit.set_radius(calibrator::m_fit_radius);
+        fit.set_rotation(calibrator::m_fit_rotation);
 
         // Calculate scale transform.
         Eigen::Vector3d fit_radius;

@@ -25,9 +25,10 @@ namespace ifopt
         void center_vector(Eigen::Vector3d& c) const;
 
         // PARAMETERS
-        /// \brief Sets the max +/- range of the center values.
-        /// \param value The value to set.
-        void p_max(double value);
+        /// \brief Sets the allowable range of center values.
+        /// \param min The minimum allowable value.
+        /// \param max The maximum allowable value.
+        void set_range(const Eigen::Vector3d& min, const Eigen::Vector3d& max);
 
     private:
         // VARIABLES
@@ -39,8 +40,10 @@ namespace ifopt
         double z;
 
         // BOUNDS
-        /// \brief Stores the max +/- range of the center values.
-        double max;
+        /// \brief Stores the minimum acceptable range of center values.
+        Eigen::Vector3d min;
+        /// \brief Stores the maximum acceptable range of center values.
+        Eigen::Vector3d max;
     };
 }
 

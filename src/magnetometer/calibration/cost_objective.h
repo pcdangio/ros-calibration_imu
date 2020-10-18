@@ -3,7 +3,6 @@
 
 #include <ifopt/cost_term.h>
 
-#include "magnetometer/data/data_interface.h"
 #include "magnetometer/geometry/ellipsoid.h"
 
 namespace ifopt
@@ -15,8 +14,8 @@ namespace ifopt
     public:
         // CONSTRUCTORS
         /// \brief Instantiates a new cost_objective instance.
-        /// \param data_interface A pointer to the magnetometer data interface.
-        cost_objective(std::shared_ptr<magnetometer::data_interface>& data_interface);
+        /// \param data_points The vector of data points to fit the ellipse to.
+        cost_objective(std::shared_ptr<std::vector<Eigen::Vector3d>>& data_points);
         ~cost_objective();
 
         // OVERRIDES
@@ -30,7 +29,7 @@ namespace ifopt
 
     private:
         // COMPONENTS
-        std::shared_ptr<magnetometer::data_interface> m_data_interface;
+        std::shared_ptr<std::vector<Eigen::Vector3d>> m_data_points;
 
         // PARAMETERS
         /// \brief Stores the perturbation for gradient calculation.
