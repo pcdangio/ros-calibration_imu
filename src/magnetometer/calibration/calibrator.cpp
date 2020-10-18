@@ -39,9 +39,9 @@ bool calibrator::start(double true_field_strength)
         calibrator::m_true_field_strength = true_field_strength;
 
         // Reset fit.
-        calibrator::m_fit.set_center({0,0,0});
-        calibrator::m_fit.set_radius({0,0,0});
-        calibrator::m_fit.set_rotation({0,0,0});
+        calibrator::m_fit_center.setZero();
+        calibrator::m_fit_radius.setZero();
+        calibrator::m_fit_rotation.setZero();
 
         // Reset calibration.
         calibrator::m_calibration_transform.setIdentity();

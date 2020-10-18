@@ -141,8 +141,12 @@ void graph::update_calibration_plots(bool calibration_success)
     if(calibration_success)
     {
         // Draw fit.
+        Eigen::Vector3d fit_center, fit_radius, fit_rotation;
+        graph::m_calibrator->get_fit(fit_center, fit_radius, fit_rotation);
         magnetometer::ellipsoid fit;
-        graph::m_calibrator->get_fit(fit);
+        fit.set_center(fit_center);
+        fit.set_radius(fit_radius);
+        fit.set_rotation(fit_rotation);
         QtDataVisualization::QScatterDataArray* fit_points = new QtDataVisualization::QScatterDataArray();
         fit.draw(fit_points);
         graph::m_series_fit->dataProxy()->resetArray(fit_points);

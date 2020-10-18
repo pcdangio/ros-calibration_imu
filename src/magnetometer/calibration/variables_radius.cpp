@@ -10,8 +10,8 @@ variables_radius::variables_radius()
     variables_radius::b = 30.0;
     variables_radius::c = 30.0;
 
-    variables_radius::min = 0.0;
-    variables_radius::max = 50.0;
+    variables_radius::min.fill(0.0);
+    variables_radius::max.fill(50.0);
 }
 
 // OVERRIDES
