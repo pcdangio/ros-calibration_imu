@@ -116,6 +116,9 @@ void graph::update_uncalibrated_plot()
     {
         QVector3D point;
         graph::m_data_interface->get_point(i, point);
+        // Scale point.
+        point *= graph::m_field_scale;
+        // Add point.
         uncalibrated_points->append(point);
     }
 
@@ -134,13 +137,6 @@ void graph::update_uncalibrated_plot()
 }
 void graph::update_calibration_plots(bool calibration_success)
 {
-    // Draw truth.
-    magnetometer::ellipsoid truth;
-    graph::m_calibrator->get_truth(truth);
-    QtDataVisualization::QScatterDataArray* truth_points = new QtDataVisualization::QScatterDataArray();
-    truth.draw(truth_points);
-    graph::m_series_truth->dataProxy()->resetArray(truth_points);
-
     // Check if calibration was successful.
     if(calibration_success)
     {
@@ -176,6 +172,25 @@ void graph::update_calibration_plots(bool calibration_success)
 
     // Update axis scales.
     graph::autoscale();
+}
+void graph::update_truth_plot(double true_field_strength)
+{
+    // Draw truth.
+
+    // Create truth ellipsoid.
+    magnetometer::ellipsoid truth;
+    Eigen::Vector3d center, radius, rotation;
+    center.setZero();
+    radius.fill(true_field_strength);
+    rotation.setZero();
+    truth.set_center(center);
+    truth.set_radius(radius);
+    truth.set_rotation(rotation);
+
+    // Draw ellipsoid.
+    QtDataVisualization::QScatterDataArray* truth_points = new QtDataVisualization::QScatterDataArray();
+    truth.draw(truth_points);
+    graph::m_series_truth->dataProxy()->resetArray(truth_points);
 }
 
 void graph::autoscale()
