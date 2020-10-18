@@ -7,11 +7,11 @@
 using namespace ifopt;
 
 // CONSTRUCTORS
-cost_objective::cost_objective(std::shared_ptr<magnetometer::data_interface>& data_interface)
+cost_objective::cost_objective(std::shared_ptr<std::vector<Eigen::Vector3d> > &data_points)
     : CostTerm("objective")
 {
     // Store data interface.
-    cost_objective::m_data_interface = data_interface;
+    cost_objective::m_data_points = data_points;
 
     // Initialize parameters.
     cost_objective::m_gradient_perturbation = 0.000001;
@@ -39,18 +39,14 @@ double cost_objective::GetCost() const
     cost_objective::m_ellipsoid->set_rotation(v_rotation->GetValues());
     
     // Iterate through points.
-    Eigen::Vector3d point;
     double mse = 0.0;
-    for(uint32_t i = 0; i < cost_objective::m_data_interface->n_points(); ++i)
+    for(auto point = cost_objective::m_data_points->cbegin(); point != cost_objective::m_data_points->cend(); ++point)
     {
-        // Get point.
-        cost_objective::m_data_interface->get_point(i, point);
-
         // Run ellipsoid residual to calculate MSE for point.
-        mse += std::pow(cost_objective::m_ellipsoid->residual(point), 2.0);
+        mse += std::pow(cost_objective::m_ellipsoid->residual(*point), 2.0);
     }
     // Take average of MSE.
-    mse /= static_cast<double>(cost_objective::m_data_interface->n_points());
+    mse /= static_cast<double>(cost_objective::m_data_points->size());
 
     return mse;
 }
