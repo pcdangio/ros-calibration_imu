@@ -151,6 +151,9 @@ void fmain::on_button_calibrate_clicked()
     // Get specified field strength (in T).
     double field_strength = fmain::ui->lineedit_field_strength->text().toDouble() / 1000000.0;
 
+    // TEMPORARY
+    fmain::m_graph->update_truth_plot(field_strength);
+
     // Start calibration routine.
     fmain::m_calibrator->start(field_strength);
 

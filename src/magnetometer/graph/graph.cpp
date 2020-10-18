@@ -190,7 +190,7 @@ void graph::update_truth_plot(double true_field_strength)
     magnetometer::ellipsoid truth;
     Eigen::Vector3d center, radius, rotation;
     center.setZero();
-    radius.fill(true_field_strength);
+    radius.fill(true_field_strength * graph::m_field_scale);
     rotation.setZero();
     truth.set_center(center);
     truth.set_radius(radius);
