@@ -2,3 +2,6 @@
 *.user
 *.autosave
 .vscode/
+
+# Ignore documentation files
+doc/
