@@ -11,7 +11,7 @@ ellipsoid::ellipsoid()
     ellipsoid::set_rotation(Eigen::Vector3d(0, 0, 0));
 }
 
-// SET METHODS
+// SET PROPERTIES
 void ellipsoid::set_center(const Eigen::Vector3d& center)
 {
     // Copy center.
@@ -60,7 +60,7 @@ void ellipsoid::set_rotation(const Eigen::Vector3d& rotation)
     ellipsoid::m_rt.noalias() = ellipsoid::m_r.transpose();
 }
 
-// GET
+// GET PROPERTIES
 void ellipsoid::get_center(Eigen::Vector3d& center) const
 {
     center = ellipsoid::m_center;

@@ -5,6 +5,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+// CONSTRUCTORS
 fmain::fmain(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::fmain)
@@ -36,7 +37,6 @@ fmain::fmain(QWidget *parent)
     connect(&(fmain::m_ros_spinner), &QTimer::timeout, this, &fmain::ros_spin);
     fmain::m_ros_spinner.start(10);
 }
-
 fmain::~fmain()
 {
     // Clean up node.
@@ -59,7 +59,7 @@ void fmain::ros_spin()
     }
 }
 
-
+// SLOTS: DATA COLLECTION
 void fmain::on_button_start_collection_clicked()
 {
     // Enable graph new point indicator.
@@ -78,13 +78,6 @@ void fmain::on_button_clear_collection_clicked()
     // Clear the data.
     fmain::m_data_interface->clear_data();
 }
-
-void fmain::collection_updated()
-{
-    // Update point counter.
-    fmain::ui->lineedit_n_collection_points->setText(QString::number(fmain::m_data_interface->n_points()));
-}
-
 void fmain::on_button_save_collection_clicked()
 {
     // Create save dialog.
@@ -104,7 +97,6 @@ void fmain::on_button_save_collection_clicked()
         fmain::m_data_interface->save_data(bag_file);
     }
 }
-
 void fmain::on_button_load_collection_clicked()
 {
     // Create load dialog.
@@ -125,24 +117,17 @@ void fmain::on_button_load_collection_clicked()
         fmain::m_data_interface->load_data(bag_file);
     }
 }
-
 void fmain::on_checkbox_graph_uncalibrated_stateChanged(int state)
 {
     fmain::m_graph->uncalibrated_visible(state == Qt::CheckState::Checked);
 }
-void fmain::on_checkbox_graph_fit_stateChanged(int state)
+void fmain::collection_updated()
 {
-    fmain::m_graph->fit_visible(state == Qt::CheckState::Checked);
-}
-void fmain::on_checkbox_graph_calibrated_stateChanged(int state)
-{
-    fmain::m_graph->calibrated_visible(state == Qt::CheckState::Checked);
-}
-void fmain::on_checkbox_graph_truth_stateChanged(int state)
-{
-    fmain::m_graph->truth_visible(state == Qt::CheckState::Checked);
+    // Update point counter.
+    fmain::ui->lineedit_n_collection_points->setText(QString::number(fmain::m_data_interface->n_points()));
 }
 
+// SLOTS: CALIBRATION
 void fmain::on_button_calibrate_clicked()
 {
     // Validate and retrieve field strength.
@@ -174,26 +159,6 @@ void fmain::on_button_calibrate_clicked()
     // Clear any existing calibrations.
     fmain::ui->textedit_calibration->clear();
 }
-
-void fmain::calibration_finished(bool success)
-{
-    // Hide the progress bar.
-    fmain::ui->progressbar_calibrate->setVisible(false);
-
-    // Display the calibration if succeeded.
-    if(success)
-    {
-        // Display calibration.
-        fmain::ui->textedit_calibration->setPlainText(QString::fromStdString(fmain::m_calibrator->print_calibration()));
-    }
-    else
-    {
-        // Display error.
-        QMessageBox message_box(QMessageBox::Icon::Warning, "", "Calibration failed.", QMessageBox::StandardButton::Ok);
-        message_box.exec();
-    }
-}
-
 void fmain::on_button_save_calibration_json_clicked()
 {
     // Create save dialog.
@@ -218,7 +183,6 @@ void fmain::on_button_save_calibration_json_clicked()
         }
     }
 }
-
 void fmain::on_button_save_calibration_yaml_clicked()
 {
     // Create save dialog.
@@ -241,5 +205,35 @@ void fmain::on_button_save_calibration_yaml_clicked()
             QMessageBox message_box(QMessageBox::Icon::Warning, "", "Save YAML calibration failed, check ROS logs for reason.", QMessageBox::StandardButton::Ok);
             message_box.exec();
         }
+    }
+}
+void fmain::on_checkbox_graph_fit_stateChanged(int state)
+{
+    fmain::m_graph->fit_visible(state == Qt::CheckState::Checked);
+}
+void fmain::on_checkbox_graph_calibrated_stateChanged(int state)
+{
+    fmain::m_graph->calibrated_visible(state == Qt::CheckState::Checked);
+}
+void fmain::on_checkbox_graph_truth_stateChanged(int state)
+{
+    fmain::m_graph->truth_visible(state == Qt::CheckState::Checked);
+}
+void fmain::calibration_finished(bool success)
+{
+    // Hide the progress bar.
+    fmain::ui->progressbar_calibrate->setVisible(false);
+
+    // Display the calibration if succeeded.
+    if(success)
+    {
+        // Display calibration.
+        fmain::ui->textedit_calibration->setPlainText(QString::fromStdString(fmain::m_calibrator->print_calibration()));
+    }
+    else
+    {
+        // Display error.
+        QMessageBox message_box(QMessageBox::Icon::Warning, "", "Calibration failed.", QMessageBox::StandardButton::Ok);
+        message_box.exec();
     }
 }

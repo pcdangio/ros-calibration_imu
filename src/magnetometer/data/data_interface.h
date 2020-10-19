@@ -1,3 +1,5 @@
+/// \file magnetometer/data/data_interface.h
+/// \brief Defines the magnetometer::data_interface class.
 #ifndef MAGNETOMETER___DATA_INTERFACE_H
 #define MAGNETOMETER___DATA_INTERFACE_H
 
@@ -5,15 +7,12 @@
 #include <QVector3D>
 #include <QElapsedTimer>
 
-#include <boost/thread.hpp>
-
 #include <eigen3/Eigen/Dense>
 
 #include <ros/ros.h>
 #include <sensor_msgs_ext/magnetometer.h>
 
-#include <mutex>
-
+/// \brief Includes all software components related to magnetometer interfacing.
 namespace magnetometer
 {
 

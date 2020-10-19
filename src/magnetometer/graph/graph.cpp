@@ -2,6 +2,7 @@
 
 using namespace magnetometer;
 
+// CONSTRUCTORS
 graph::graph(std::shared_ptr<magnetometer::data_interface>& data_interface, std::shared_ptr<magnetometer::calibrator>& calibrator)
 {
     // Store components.
@@ -63,11 +64,13 @@ graph::~graph()
     delete graph::m_graph;
 }
 
+// INITIALIZATION
 QWidget* graph::get_widget()
 {
     return QWidget::createWindowContainer(graph::m_graph);
 }
 
+// PLOT VISIBILITY
 void graph::uncalibrated_visible(bool visible)
 {
     graph::m_series_uncalibrated->setVisible(visible);
@@ -85,7 +88,6 @@ void graph::truth_visible(bool visible)
 {
     graph::m_series_truth->setVisible(visible);
 }
-
 void graph::indicate_new_point(bool enabled)
 {
     bool update_series = (enabled != graph::f_indicate_new_point);
@@ -97,6 +99,7 @@ void graph::indicate_new_point(bool enabled)
     }
 }
 
+// PLOT UPDATE METHODS
 void graph::update_uncalibrated_plot()
 {
     // Add all uncalibrated data points to the series.
@@ -202,6 +205,7 @@ void graph::update_truth_plot(double true_field_strength)
     graph::m_series_truth->dataProxy()->resetArray(truth_points);
 }
 
+// PLOT METHODS
 void graph::autoscale()
 {
     // Determine min/max x/y/z values of all points in all series.
