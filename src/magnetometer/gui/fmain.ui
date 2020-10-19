@@ -11,12 +11,12 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>fmain</string>
+   <string>Magnetometer Calibration</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="layout_main">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
+     <layout class="QVBoxLayout" name="layout_left_panel">
       <item>
        <widget class="QGroupBox" name="groupbox_collection">
         <property name="minimumSize">
@@ -36,7 +36,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <layout class="QHBoxLayout" name="layout_collection_management">
            <item>
             <widget class="QPushButton" name="button_start_collection">
              <property name="text">
@@ -61,9 +61,9 @@
           </layout>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <layout class="QHBoxLayout" name="layout_collection_points">
            <item>
-            <widget class="QLabel" name="label">
+            <widget class="QLabel" name="label_points">
              <property name="text">
               <string>Points:</string>
              </property>
@@ -85,7 +85,7 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer">
+          <spacer name="spacer_collection">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -98,7 +98,7 @@
           </spacer>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout">
+          <layout class="QHBoxLayout" name="layout_bag_files">
            <item>
             <widget class="QPushButton" name="button_save_collection">
              <property name="text">
@@ -147,7 +147,7 @@
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <layout class="QHBoxLayout" name="layout_field_strength">
            <item>
             <widget class="QLabel" name="label_field_strength">
              <property name="text">
@@ -201,7 +201,7 @@
           </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <layout class="QHBoxLayout" name="layout_save_calibration">
            <item>
             <widget class="QPushButton" name="button_save_calibration_json">
              <property name="text">
