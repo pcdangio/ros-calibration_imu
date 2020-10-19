@@ -1,3 +1,5 @@
+/// \file magnetometer/calibration/variables_center.h
+/// \brief Defines the ifopt::variables_center class.
 #ifndef VARIABLES_CENTER_H
 #define VARIABLES_CENTER_H
 

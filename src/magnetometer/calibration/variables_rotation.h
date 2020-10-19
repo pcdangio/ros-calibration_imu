@@ -1,3 +1,5 @@
+/// \file magnetometer/calibration/variables_rotation.h
+/// \brief Defines the ifopt::variables_rotation class.
 #ifndef VARIABLE_ROTATION_H
 #define VARIABLE_ROTATION_H
 

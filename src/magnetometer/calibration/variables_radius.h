@@ -1,3 +1,5 @@
+/// \file magnetometer/calibration/variables_radius.h
+/// \brief Defines the ifopt::variables_radius class.
 #ifndef VARIABLES_RADIUS_H
 #define VARIABLES_RADIUS_H
 

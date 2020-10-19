@@ -1,3 +1,5 @@
+/// \file magnetometer/calibration/cost_objective.h
+/// \brief Defines the ifopt::cost_objective class.
 #ifndef COST_OBJECTIVE_H
 #define COST_OBJECTIVE_H
 
@@ -5,6 +7,7 @@
 
 #include "magnetometer/geometry/ellipsoid.h"
 
+/// \brief Includes software components related to optimization with the IFOPT ROS package.
 namespace ifopt
 {
     /// \brief The objective function for the ellipse fit.
