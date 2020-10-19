@@ -22,13 +22,13 @@
         <property name="minimumSize">
          <size>
           <width>300</width>
-          <height>161</height>
+          <height>190</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
           <width>300</width>
-          <height>161</height>
+          <height>190</height>
          </size>
         </property>
         <property name="title">
@@ -115,6 +115,16 @@
            </item>
           </layout>
          </item>
+         <item>
+          <widget class="QCheckBox" name="checkbox_graph_uncalibrated">
+           <property name="text">
+            <string>Plot uncalibrated data</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
       </item>
@@ -135,20 +145,23 @@
         <property name="title">
          <string>Calibration</string>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
            <item>
             <widget class="QLabel" name="label_field_strength">
              <property name="text">
-              <string>True Field Strength (uT)</string>
+              <string>True Field Strength (nT):</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QLineEdit" name="lineedit_field_strength">
              <property name="text">
-              <string>31.9386</string>
+              <string>31938.6</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -171,9 +184,6 @@
            </property>
            <property name="value">
             <number>-1</number>
-           </property>
-           <property name="textVisible">
-            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -208,41 +218,10 @@
            </item>
           </layout>
          </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupbox_graph">
-        <property name="minimumSize">
-         <size>
-          <width>300</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>300</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="title">
-         <string>Graph Settings</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QCheckBox" name="checkbox_graph_uncalibrated">
-           <property name="text">
-            <string>Uncalibrated Data</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
          <item>
           <widget class="QCheckBox" name="checkbox_graph_fit">
            <property name="text">
-            <string>Uncalibrated Fit</string>
+            <string>Plot uncalibrated ellipsoid fit</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -252,7 +231,7 @@
          <item>
           <widget class="QCheckBox" name="checkbox_graph_calibrated">
            <property name="text">
-            <string>Calibrated Data</string>
+            <string>Plot calibrated data</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -262,7 +241,7 @@
          <item>
           <widget class="QCheckBox" name="checkbox_graph_truth">
            <property name="text">
-            <string>Truth Sphere</string>
+            <string>Plot true magnetic field</string>
            </property>
            <property name="checked">
             <bool>true</bool>

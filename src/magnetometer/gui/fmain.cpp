@@ -11,9 +11,6 @@ fmain::fmain(QWidget *parent)
 {
     // Set up UI.
     ui->setupUi(this);
-    QDoubleValidator* validator_true_field_strength = new QDoubleValidator(0.0,100.0,6);
-    validator_true_field_strength->setNotation(QDoubleValidator::StandardNotation);
-    ui->lineedit_field_strength->setValidator(validator_true_field_strength);
     ui->progressbar_calibrate->setVisible(false);
 
     // Set up node handle.
@@ -148,10 +145,24 @@ void fmain::on_checkbox_graph_truth_stateChanged(int state)
 
 void fmain::on_button_calibrate_clicked()
 {
-    // Get specified field strength (in T).
-    double field_strength = fmain::ui->lineedit_field_strength->text().toDouble() / 1000000.0;
+    // Validate and retrieve field strength.
+    bool valid_field_strength;
+    double nanoteslas = fmain::ui->lineedit_field_strength->text().toDouble(&valid_field_strength);
+    if(!valid_field_strength || nanoteslas < 10000)
+    {
+        // Display error.
+        QMessageBox message_box(QMessageBox::Icon::Warning, "", "True field strength must be a valid number above 10,000nT.", QMessageBox::StandardButton::Ok);
+        message_box.exec();
 
-    // TEMPORARY
+        // Bring focus back to line edit.
+        fmain::ui->lineedit_field_strength->setFocus();
+        fmain::ui->lineedit_field_strength->selectAll();
+
+        return;
+    }
+    double field_strength = nanoteslas / 1000000000.0;
+
+    // Update graph's true field plot.
     fmain::m_graph->update_truth_plot(field_strength);
 
     // Start calibration routine.

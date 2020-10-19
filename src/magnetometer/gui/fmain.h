@@ -23,6 +23,9 @@ public:
     fmain(QWidget *parent = nullptr);
     ~fmain();
 
+signals:
+    void field_strength_updated(double new_value);
+
 private slots:
 
 
