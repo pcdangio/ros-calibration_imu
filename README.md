@@ -9,7 +9,7 @@
 
 ## 1: Overview
 
-This package includes a number of tools for calibrating accelerometers, gyroscopes, and magnetometers typically found within Inertial Measurement Units (IMUs).
+This package includes a number of graphical tools for calibrating accelerometers, gyroscopes, and magnetometers typically found within Inertial Measurement Units (IMUs).
 
 **Keywords:** imu accelerometer gyroscope magnetometer calibration
 
@@ -17,10 +17,9 @@ This package includes a number of tools for calibrating accelerometers, gyroscop
 
 The source code for this package is released under an [MIT license](LICENSE).
 
-**Author: Paul D'Angio<br />
-Maintainer: Paul D'Angio, pcdangio@gmail.com**
+**Author/Maintainer:** Paul D'Angio, pcdangio (at) gmail.com
 
-The driver_mt3339 package has been tested under [ROS] Melodic and Ubuntu 18.04. This is research code, expect that it changes often and any fitness for a particular purpose is disclaimed.
+This package has been tested under ROS Melodic and Ubuntu 18.04. This is research code, expect that it changes often and any fitness for a particular purpose is disclaimed.
 
 ## 2: Installation
 
@@ -28,7 +27,9 @@ The driver_mt3339 package has been tested under [ROS] Melodic and Ubuntu 18.04. 
 
 #### Dependencies
 
-- [Robot Operating System (ROS)](http://wiki.ros.org) (middleware for robotics)
+- [Qt 5+](https://doc.qt.io/qt-5/) (software framework for graphical user interfaces)
+- [Qt 5+ Data Visualization Module](https://doc.qt.io/qt-5/qtdatavisualization-index.html) (Qt module for 3D data visualization)
+- [Robot Operating System (ROS)](http://wiki.ros.org) (robotic software architecture)
 - [sensor_msgs_ext](https://github.com/pcdangio/ros-sensor_msgs_ext) (ROS extended sensor messages)
 - [ifopt](http://wiki.ros.org/ifopt) (ROS package for IPOPT optimization)
 - [rosbag](http://wiki.ros.org/rosbag) (ROS package for saving ROS topic data)
