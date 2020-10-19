@@ -7,6 +7,7 @@
 
 using namespace magnetometer;
 
+// CONSTRUCTORS
 calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface)
 {
     // Initialize true field strength.
@@ -30,6 +31,7 @@ calibrator::~calibrator()
     }
 }
 
+// METHODS
 bool calibrator::start(double true_field_strength)
 {
     // Check if thread is running.
@@ -57,6 +59,7 @@ bool calibrator::start(double true_field_strength)
     }
 }
 
+// RESULTS
 void calibrator::get_fit(Eigen::Vector3d& center, Eigen::Vector3d& radius, Eigen::Vector3d& rotation)
 {
     // Return ellipsoid parameters.
@@ -70,6 +73,7 @@ void calibrator::get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& tr
     translation = calibrator::m_calibration_translation;
 }
 
+// CALIBRATION SAVING
 std::string calibrator::print_calibration()
 {
     // Scale the translation component.
@@ -176,6 +180,7 @@ bool calibrator::save_calibration_yaml(std::string filepath)
     return true;
 }
 
+// THREADING
 void calibrator::thread_worker()
 {
     // Flag thread as running.
