@@ -77,6 +77,16 @@ Executing this command will start up the magnetometer calibration GUI.
 
 The calibration routine needs a set of uncalibrated data to process so it can detect hard-iron and soft-iron distortions. The uncalibrated data is collected by rotating your platform/magnetometer in specific patterns while recording it's data.  To collect data:
 
-1. Ensure your platform is in it's operational configuration. Things like batteries, covers, or other ferrous/magnetic components will all have an effect on the calibration, so they should all be mounted and/or connected during the calibration process.
-2. Set up the node to subscribe to your platform's ROS topic for magnetometer data. The magnetometer node automatically subscribes to the `imu/magnetometer` topic, which may be [remapped](http://wiki.ros.org/Remapping%20Arguments) when starting the magnetometer node.
-3. Click on the "Start" button in the Data Collection box of the GUI. You will see data start populating in the 3D plot, with a large red point indicating the most recently collected point. The rate at which data is collected can be limited by setting the `max_data_rate` parameter (in Hz) in the ROS parameter server.
+1. **CRITICAL:** Ensure your platform is in it's operational configuration. Things like batteries, covers, or other ferrous/magnetic components will all have an effect on the calibration, so they should all be mounted and/or connected during the calibration process.
+2. **CRITICAL:** Set up your platform in an outdoor area free from nearby magnetic interference (e.g. buildings, power lines, metal plates, etc.)
+3. Set up the node to subscribe to your platform's ROS topic for magnetometer data. The magnetometer node automatically subscribes to the `imu/magnetometer` topic, which may be [remapped](http://wiki.ros.org/Remapping%20Arguments) when starting the magnetometer node.
+4. Click on the "Start" button in the Data Collection box of the GUI. You will see data start populating in the 3D plot, with a large red point indicating the most recently collected point. The rate at which data is collected can be limited by setting the `~/max_data_rate` parameter (in Hz) in the ROS parameter server.
+5. Rotate your platform in all directions. You will be able to see a 3D ellipsoid start forming in the plot window (a red point shows the current position). Once you can clearly see the general shape of a bounded 3D ellipsoid, you may stop collection. **NOTE:** It is very important for the data points to fully bound the ellipsoid, while it is *NOT* important to have a lot of points.
+
+#### Step 3: Run calibration.
+
+The calibration routine can now be executed on the collected data. To calibrate:
+
+1. Enter the true magnetic field strength in the supplied text box. You may look up the true field strength using NOAA's [World Magnetic Model](https://www.ngdc.noaa.gov/geomag/calculators/magcalc.shtml#igrfwmm) and your current location on earth. **NOTE:** You must enter the *total* field strength, in nT.
+2. Start the calibration. It should take anywhere from 1s-30s depending on how many data points you have. Once the calibration is complete, it will appear in the calibration textbox. If you have all plots enabled, you will be able to see the 3D ellipsoid that was fit to your data, the true magnetic field sphere, and a calibrated set of your data points that should align closely with the true field sphere.
+3. You may export your calibration by either copying the calibration text box, saving it to JSON format, or saving it to YAML format.
