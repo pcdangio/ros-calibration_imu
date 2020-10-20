@@ -38,16 +38,20 @@ This package has been tested under ROS Melodic and Ubuntu 18.04. This is researc
 
 To build from source, clone the latest version from this repository into your catkin workspace and compile the package using
 
-        cd catkin_workspace/src
-        git clone https://github.com/pcdangio/ros-calibration_imu.git calibration_imu
-        cd ../
-        catkin_make
+```
+cd catkin_workspace/src
+git clone https://github.com/pcdangio/ros-calibration_imu.git calibration_imu
+cd ../
+catkin_make
+```
 
 ## 3: Usage
 
 This package includes several nodes for calbrating components of your IMU. See the [Nodes](#nodes) section for available nodes to run.
 
-        rosrun calibration_imu <node_name>
+```
+rosrun calibration_imu <node_name>
+```
 
 ## 4: Nodes
 
@@ -57,3 +61,22 @@ This package includes the following nodes for calibration:
 
 ### 4.1: magnetometer
 
+This node offers calibration tools for 3-dimensional magnetometers commonly found in IMUs. Magnetometers often experience hard-iron and soft-iron distortions from magnets and metal objects that are statically mounted near the magnetometer. These distortions depend on the design/geometry of your system's hardware. This node will calculate a calibration that reduces these effects and gives a more accurate magnetometer reading.
+
+#### Step 1: Run the node.
+
+The node can be run with the following command:
+
+```
+rosrun calibration_imu magnetometer
+```
+
+Executing this command will start up the magnetometer calibration GUI.
+
+#### Step 2: Collect data.
+
+The calibration routine needs a set of uncalibrated data to process so it can detect hard-iron and soft-iron distortions. The uncalibrated data is collected by rotating your platform/magnetometer in specific patterns while recording it's data.  To collect data:
+
+1. Ensure your platform is in it's operational configuration. Things like batteries, covers, or other ferrous/magnetic components will all have an effect on the calibration, so they should all be mounted and/or connected during the calibration process.
+2. Set up the node to subscribe to your platform's ROS topic for magnetometer data. The magnetometer node automatically subscribes to the `imu/magnetometer` topic, which may be [remapped](http://wiki.ros.org/Remapping%20Arguments) when starting the magnetometer node.
+3. Click on the "Start" button in the Data Collection box of the GUI. You will see data start populating in the 3D plot, with a large red point indicating the most recently collected point. The rate at which data is collected can be limited by setting the `max_data_rate` parameter (in Hz) in the ROS parameter server.
