@@ -55,7 +55,7 @@ bool data_interface::save_data(std::string& bag_file) const
         rosbag::Bag bag(bag_file, rosbag::bagmode::Write);
 
         // Iterate over points.
-        sensor_msgs_ext::magnetometer message;
+        sensor_msgs_ext::magnetic_field message;
         for(uint32_t i = 0; i < data_interface::m_x.size(); ++i)
         {
             // Populate message.
@@ -99,7 +99,7 @@ bool data_interface::load_data(std::string& bag_file)
         for(auto instance = view.begin(); instance != view.end(); ++instance)
         {
             // Instantiate message.
-            auto message = instance->instantiate<sensor_msgs_ext::magnetometer>();
+            auto message = instance->instantiate<sensor_msgs_ext::magnetic_field>();
 
             // Read message.
             if(message)
@@ -171,7 +171,7 @@ bool data_interface::get_point(uint32_t index, QVector3D& point)
 }
 
 // DATA SUBSCRIBER
-void data_interface::subscriber(const sensor_msgs_ext::magnetometerConstPtr& message)
+void data_interface::subscriber(const sensor_msgs_ext::magnetic_fieldConstPtr& message)
 {
     // Enforce max data rate.
     if(data_interface::m_data_timer.elapsed() >= 1000.0/data_interface::p_max_data_rate)
