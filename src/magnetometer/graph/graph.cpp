@@ -13,10 +13,13 @@ graph::graph(std::shared_ptr<magnetometer::data_interface>& data_interface, std:
     graph::m_graph = new QtDataVisualization::Q3DScatter();
     graph::m_graph->axisX()->setTitle("x");
     graph::m_graph->axisX()->setTitleVisible(true);
+    graph::m_graph->axisX()->setSegmentCount(10);
     graph::m_graph->axisY()->setTitle("z");
     graph::m_graph->axisY()->setTitleVisible(true);
+    graph::m_graph->axisY()->setSegmentCount(10);
     graph::m_graph->axisZ()->setTitle("y");
     graph::m_graph->axisZ()->setTitleVisible(true);
+    graph::m_graph->axisZ()->setSegmentCount(10);
     graph::m_graph->setAspectRatio(1.0);
     graph::m_graph->setHorizontalAspectRatio(1.0);
     graph::m_graph->setShadowQuality(QtDataVisualization::QAbstract3DGraph::ShadowQuality::ShadowQualityNone);
@@ -228,9 +231,15 @@ void graph::autoscale()
 
     // Update axis ranges.
     float margin = 5;
-    graph::m_graph->axisX()->setRange(min - margin, max + margin);
-    graph::m_graph->axisY()->setRange(min - margin, max + margin);
-    graph::m_graph->axisZ()->setRange(min - margin, max + margin);
+    float range_min = min - margin;
+    float range_max = max + margin;
+    // Round to nearest factor of 10.
+    range_min = static_cast<int32_t>((range_min + (float)(range_min >= 0) * (10 - 1)) / 10) * 10.0;
+    range_max = static_cast<int32_t>((range_max + (float)(range_max >= 0) * (10 - 1)) / 10) * 10.0;
+    // Set ranges.
+    graph::m_graph->axisX()->setRange(range_min, range_max);
+    graph::m_graph->axisY()->setRange(range_min, range_max);
+    graph::m_graph->axisZ()->setRange(range_min, range_max);
 }
 void graph::update_range(QtDataVisualization::QScatter3DSeries* series, float &min, float &max)
 {
