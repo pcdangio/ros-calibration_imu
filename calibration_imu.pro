@@ -34,6 +34,7 @@ HEADERS += \
 
 SOURCES += \
     src/accelerometer/gui/fmain.cpp \
+    src/accelerometer/main.cpp \
     src/magnetometer/calibration/calibrator.cpp \
     src/magnetometer/calibration/cost_objective.cpp \
     src/magnetometer/calibration/variables_center.cpp \
