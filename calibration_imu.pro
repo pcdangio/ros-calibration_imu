@@ -16,9 +16,11 @@ DISTFILES += \
     package.xml
 
 FORMS += \
+    src/accelerometer/gui/fmain.ui \
     src/magnetometer/gui/fmain.ui
 
 HEADERS += \
+    src/accelerometer/gui/fmain.h \
     src/magnetometer/calibration/calibrator.h \
     src/magnetometer/calibration/cost_objective.h \
     src/magnetometer/calibration/variables_center.h \
@@ -31,6 +33,7 @@ HEADERS += \
     src/magnetometer/gui/fmain.h
 
 SOURCES += \
+    src/accelerometer/gui/fmain.cpp \
     src/magnetometer/calibration/calibrator.cpp \
     src/magnetometer/calibration/cost_objective.cpp \
     src/magnetometer/calibration/variables_center.cpp \
