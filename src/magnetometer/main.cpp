@@ -5,7 +5,7 @@
 int main(int argc, char *argv[])
 {
     // Initialize ROS
-    ros::init(argc, argv, "calibration_imu");
+    ros::init(argc, argv, "calibration_magnetometer");
 
     QApplication a(argc, argv);
     fmain w;
