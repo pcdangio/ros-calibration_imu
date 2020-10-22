@@ -156,7 +156,8 @@ add_executable(magnetometer
 add_executable(accelerometer
     src/accelerometer/main.cpp
     src/accelerometer/gui/fmain.ui
-    src/accelerometer/gui/fmain.cpp)
+    src/accelerometer/gui/fmain.cpp
+    src/accelerometer/data/data_interface.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

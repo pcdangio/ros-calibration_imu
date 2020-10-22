@@ -10,7 +10,7 @@
 
 #include <eigen3/Eigen/Dense>
 
-#include <unordered_map>
+#include <deque>
 
 namespace accelerometer {
 
@@ -34,7 +34,7 @@ public:
         LEFT_DOWN = 2,      ///< Left is aligned with gravity vector.
         RIGHT_DOWN = 3,     ///< Right is aligned with gravity vector.
         FRONT_DOWN = 4,     ///< Front is aligned with gravity vector.
-        BACK_DOWN = 5       ///< Back is aligned with gravity vector.
+        REAR_DOWN = 5       ///< Rear is aligned with gravity vector.
     };
 
     // COLLECTION
@@ -54,6 +54,8 @@ public:
     /// \brief Gets a copy of the dataset to work with.
     /// \param data The matrix to copy the data set into.
     void get_dataset(Eigen::Matrix<double, 3, 6>& data) const;
+    /// \brief Empties the data set.
+    void clear_dataset();
 
 signals:
     /// \brief Signals a new measurement is available from the ongoing collection.

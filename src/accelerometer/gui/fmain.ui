@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Accelerometer Calibration</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
@@ -46,6 +46,9 @@
            </item>
            <item>
             <widget class="QPushButton" name="button_stop_collection">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Stop Collection</string>
              </property>
@@ -57,6 +60,9 @@
           <layout class="QFormLayout" name="formLayout">
            <item row="0" column="0">
             <widget class="QPushButton" name="button_grab_bottom">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Grab</string>
              </property>
@@ -65,7 +71,7 @@
            <item row="0" column="1">
             <widget class="QLabel" name="label_grab_bottom">
              <property name="text">
-              <string>Bottom Down</string>
+              <string>BOTTOM down</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -74,6 +80,9 @@
            </item>
            <item row="1" column="0">
             <widget class="QPushButton" name="button_grab_top">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Grab</string>
              </property>
@@ -82,7 +91,7 @@
            <item row="1" column="1">
             <widget class="QLabel" name="label_grab_top">
              <property name="text">
-              <string>Top Down</string>
+              <string>TOP down</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -91,6 +100,9 @@
            </item>
            <item row="2" column="0">
             <widget class="QPushButton" name="button_grab_left">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Grab</string>
              </property>
@@ -99,7 +111,7 @@
            <item row="2" column="1">
             <widget class="QLabel" name="label_grab_left">
              <property name="text">
-              <string>Left Down</string>
+              <string>LEFT down</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -108,6 +120,9 @@
            </item>
            <item row="3" column="0">
             <widget class="QPushButton" name="button_grab_right">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Grab</string>
              </property>
@@ -116,7 +131,7 @@
            <item row="3" column="1">
             <widget class="QLabel" name="label_grab_right">
              <property name="text">
-              <string>Right Down</string>
+              <string>RIGHT down</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -125,6 +140,9 @@
            </item>
            <item row="4" column="0">
             <widget class="QPushButton" name="button_grab_front">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Grab</string>
              </property>
@@ -133,7 +151,7 @@
            <item row="4" column="1">
             <widget class="QLabel" name="label_grab_front">
              <property name="text">
-              <string>Front Down</string>
+              <string>FRONT down</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -142,15 +160,18 @@
            </item>
            <item row="5" column="0">
             <widget class="QPushButton" name="button_grab_rear">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
               <string>Grab</string>
              </property>
             </widget>
            </item>
            <item row="5" column="1">
-            <widget class="QLabel" name="label_grab_back">
+            <widget class="QLabel" name="label_grab_rear">
              <property name="text">
-              <string>Back Down</string>
+              <string>REAR down</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>

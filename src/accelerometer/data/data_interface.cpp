@@ -86,6 +86,10 @@ void data_interface::get_dataset(Eigen::Matrix<double, 3, 6>& data) const
 {
     data = data_interface::m_data;
 }
+void data_interface::clear_dataset()
+{
+    data_interface::m_data.setZero();
+}
 
 // SUBSCRIBER
 void data_interface::subscriber(const sensor_msgs_ext::accelerationConstPtr& message)
