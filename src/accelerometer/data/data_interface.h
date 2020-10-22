@@ -1,7 +1,7 @@
-/// \file accelerometer/data/data_manager.h
-/// \brief Defines the accelerometer::data_manager class.
-#ifndef ACCELEROMETER_DATA_MANAGER_H
-#define ACCELEROMETER_DATA_MANAGER_H
+/// \file accelerometer/data/data_interface.h
+/// \brief Defines the accelerometer::data_interface class.
+#ifndef ACCELEROMETER_DATA_INTERFACE_H
+#define ACCELEROMETER_DATA_INTERFACE_H
 
 #include <QObject>
 
@@ -15,15 +15,15 @@
 namespace accelerometer {
 
 /// \brief Facilitates the collection of accelerometer data for calibration.
-class data_manager : public QObject
+class data_interface : public QObject
 {
     Q_OBJECT
 public:
     // CONSTRUCTORS
-    /// \brief Creates a new data_manager instance.
+    /// \brief Creates a new data_interface instance.
     /// \param node The shared ROS node handle.
-    data_manager(std::shared_ptr<ros::NodeHandle> node);
-    ~data_manager();
+    data_interface(std::shared_ptr<ros::NodeHandle> node);
+    ~data_interface();
 
     // ENUMERATIONS
     /// \brief Enumerates the possible orientations of the accelerometer.
@@ -74,7 +74,7 @@ private:
     void subscriber(const sensor_msgs_ext::accelerationConstPtr& message);
 
     // FLAGS
-    /// \brief Indicates if the data_manager is currently collecting data.
+    /// \brief Indicates if the data_interface is currently collecting data.
     bool f_is_collecting;
 
     // BUFFER
