@@ -20,6 +20,7 @@ FORMS += \
     src/magnetometer/gui/fmain.ui
 
 HEADERS += \
+    src/accelerometer/data/data_manager.h \
     src/accelerometer/gui/fmain.h \
     src/magnetometer/calibration/calibrator.h \
     src/magnetometer/calibration/cost_objective.h \
@@ -33,6 +34,7 @@ HEADERS += \
     src/magnetometer/gui/fmain.h
 
 SOURCES += \
+    src/accelerometer/data/data_manager.cpp \
     src/accelerometer/gui/fmain.cpp \
     src/accelerometer/main.cpp \
     src/magnetometer/calibration/calibrator.cpp \
