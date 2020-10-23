@@ -151,7 +151,7 @@ add_executable(magnetometer
     src/common/calibration/variables_center.cpp
     src/magnetometer/calibration/variables_rotation.cpp
     src/common/calibration/variables_radius.cpp
-    src/magnetometer/calibration/cost_objective.cpp
+    src/magnetometer/calibration/cost_term.cpp
     src/magnetometer/calibration/calibrator.cpp)
 
 add_executable(accelerometer

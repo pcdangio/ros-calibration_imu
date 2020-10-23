@@ -1,5 +1,7 @@
 #include "graph.h"
 
+#include "common/geometry/ellipsoid.h"
+
 using namespace magnetometer;
 
 // CONSTRUCTORS

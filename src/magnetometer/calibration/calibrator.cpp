@@ -2,6 +2,11 @@
 
 #include <ros/node_handle.h>
 
+#include "common/calibration/variables_center.h"
+#include "common/calibration/variables_radius.h"
+#include "magnetometer/calibration/variables_rotation.h"
+#include "magnetometer/calibration/cost_term.h"
+
 #include <fstream>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -232,7 +237,7 @@ void calibrator::thread_worker()
     std::shared_ptr<ifopt::variables_center> variables_center = std::make_shared<ifopt::variables_center>();
     std::shared_ptr<ifopt::variables_rotation> variables_rotation = std::make_shared<ifopt::variables_rotation>();
     std::shared_ptr<ifopt::variables_radius> variables_radius = std::make_shared<ifopt::variables_radius>();
-    std::shared_ptr<ifopt::cost_objective> cost_objective = std::make_shared<ifopt::cost_objective>(data_points);
+    std::shared_ptr<ifopt::cost_term> cost_term = std::make_shared<ifopt::cost_term>(data_points);
 
     // Set initial guess and range for each variable.
     // Center
@@ -245,14 +250,14 @@ void calibrator::thread_worker()
     variables_rotation->set_max(M_PI);
 
     // Set component parameters.
-    cost_objective->p_gradient_perturbation(0.000001);
+    cost_term->p_gradient_perturbation(0.000001);
 
     // Set up the optimization problem.
     ifopt::Problem problem;
     problem.AddVariableSet(variables_center);
     problem.AddVariableSet(variables_rotation);
     problem.AddVariableSet(variables_radius);
-    problem.AddCostSet(cost_objective);
+    problem.AddCostSet(cost_term);
 
     // Run solver.
     ifopt::IpoptSolver solver;

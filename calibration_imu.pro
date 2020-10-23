@@ -27,7 +27,7 @@ HEADERS += \
     src/accelerometer/graph/graph.h \
     src/accelerometer/gui/fmain.h \
     src/magnetometer/calibration/calibrator.h \
-    src/magnetometer/calibration/cost_objective.h \
+    src/magnetometer/calibration/cost_term.h \
     src/magnetometer/calibration/variables_rotation.h \
     src/magnetometer/data/data_interface.h \
     src/magnetometer/data/ellipsoid.h \
@@ -43,7 +43,7 @@ SOURCES += \
     src/accelerometer/gui/fmain.cpp \
     src/accelerometer/main.cpp \
     src/magnetometer/calibration/calibrator.cpp \
-    src/magnetometer/calibration/cost_objective.cpp \
+    src/magnetometer/calibration/cost_term.cpp \
     src/magnetometer/calibration/variables_rotation.cpp \
     src/magnetometer/data/data_interface.cpp \
     src/magnetometer/graph/graph.cpp \
