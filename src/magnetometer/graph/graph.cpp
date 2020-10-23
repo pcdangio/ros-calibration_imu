@@ -152,7 +152,7 @@ void graph::update_calibration_plots(bool calibration_success)
         // Scale center and radius.
         fit_center *= graph::m_field_scale;
         fit_radius *= graph::m_field_scale;
-        magnetometer::ellipsoid fit;
+        common::ellipsoid fit;
         fit.set_center(fit_center);
         fit.set_radius(fit_radius);
         fit.set_rotation(fit_rotation);
@@ -193,7 +193,7 @@ void graph::update_truth_plot(double true_field_strength)
     // Draw truth.
 
     // Create truth ellipsoid.
-    magnetometer::ellipsoid truth;
+    common::ellipsoid truth;
     Eigen::Vector3d center, radius, rotation;
     center.setZero();
     radius.fill(true_field_strength * graph::m_field_scale);

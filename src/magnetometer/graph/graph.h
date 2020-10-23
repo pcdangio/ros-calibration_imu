@@ -6,8 +6,6 @@
 #include "magnetometer/data/data_interface.h"
 #include "magnetometer/calibration/calibrator.h"
 
-#include "magnetometer/geometry/ellipsoid.h"
-
 #include <QObject>
 #include <QtDataVisualization/Q3DScatter>
 #include <QtDataVisualization/QScatter3DSeries>

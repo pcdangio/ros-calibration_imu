@@ -146,11 +146,11 @@ add_executable(magnetometer
     src/magnetometer/gui/fmain.ui
     src/magnetometer/gui/fmain.cpp
     src/magnetometer/data/data_interface.cpp
-    src/magnetometer/geometry/ellipsoid.cpp
+    src/common/geometry/ellipsoid.cpp
     src/magnetometer/graph/graph.cpp
-    src/magnetometer/calibration/variables_center.cpp
+    src/common/calibration/variables_center.cpp
     src/magnetometer/calibration/variables_rotation.cpp
-    src/magnetometer/calibration/variables_radius.cpp
+    src/common/calibration/variables_radius.cpp
     src/magnetometer/calibration/cost_objective.cpp
     src/magnetometer/calibration/calibrator.cpp)
 

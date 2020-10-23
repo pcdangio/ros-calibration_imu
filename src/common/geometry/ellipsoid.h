@@ -7,7 +7,7 @@
 
 #include <QtDataVisualization/QScatterDataArray>
 
-namespace magnetometer
+namespace common
 {
 
 /// \brief Represents a 3-dimensional ellipsoid.

@@ -12,12 +12,11 @@
 
 #include "magnetometer/data/data_interface.h"
 
-#include "magnetometer/calibration/variables_center.h"
+#include "common/calibration/variables_center.h"
+#include "common/calibration/variables_radius.h"
 #include "magnetometer/calibration/variables_rotation.h"
-#include "magnetometer/calibration/variables_radius.h"
-#include "magnetometer/calibration/cost_objective.h"
 
-#include "magnetometer/geometry/ellipsoid.h"
+#include "magnetometer/calibration/cost_objective.h"
 
 namespace magnetometer
 {

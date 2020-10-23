@@ -1,6 +1,6 @@
-#include "magnetometer/geometry/ellipsoid.h"
+#include "common/geometry/ellipsoid.h"
 
-using namespace magnetometer;
+using namespace common;
 
 // CONSTRUCTOR
 ellipsoid::ellipsoid()

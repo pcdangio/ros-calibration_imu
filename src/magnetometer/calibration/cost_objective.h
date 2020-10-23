@@ -5,7 +5,7 @@
 
 #include <ifopt/cost_term.h>
 
-#include "magnetometer/geometry/ellipsoid.h"
+#include "common/geometry/ellipsoid.h"
 
 /// \brief Includes software components related to optimization with the IFOPT ROS package.
 namespace ifopt
@@ -40,7 +40,7 @@ namespace ifopt
 
         // PREALLOCATIONS
         /// \brief A preallocated ellipse for calculation.
-        magnetometer::ellipsoid* m_ellipsoid;
+        common::ellipsoid* m_ellipsoid;
     };
 }
 

@@ -1,8 +1,8 @@
 #include "magnetometer/calibration/cost_objective.h"
 
-#include "magnetometer/calibration/variables_center.h"
+#include "common/calibration/variables_center.h"
+#include "common/calibration/variables_radius.h"
 #include "magnetometer/calibration/variables_rotation.h"
-#include "magnetometer/calibration/variables_radius.h"
 
 using namespace ifopt;
 
@@ -17,7 +17,7 @@ cost_objective::cost_objective(std::shared_ptr<std::vector<Eigen::Vector3d> > &d
     cost_objective::m_gradient_perturbation = 0.000001;
 
     // Set up preallocated ellipsoid.
-    cost_objective::m_ellipsoid = new magnetometer::ellipsoid();
+    cost_objective::m_ellipsoid = new common::ellipsoid();
 }
 cost_objective::~cost_objective()
 {

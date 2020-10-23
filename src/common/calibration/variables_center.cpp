@@ -1,4 +1,4 @@
-#include "magnetometer/calibration/variables_center.h"
+#include "common/calibration/variables_center.h"
 
 using namespace ifopt;
 

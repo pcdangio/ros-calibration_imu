@@ -20,32 +20,32 @@ FORMS += \
     src/magnetometer/gui/fmain.ui
 
 HEADERS += \
+    src/common/geometry/ellipsoid.h \
+    src/common/calibration/variables_center.h \
+    src/common/calibration/variables_radius.h \
     src/accelerometer/data/data_interface.h \
     src/accelerometer/graph/graph.h \
     src/accelerometer/gui/fmain.h \
     src/magnetometer/calibration/calibrator.h \
     src/magnetometer/calibration/cost_objective.h \
-    src/magnetometer/calibration/variables_center.h \
-    src/magnetometer/calibration/variables_radius.h \
     src/magnetometer/calibration/variables_rotation.h \
     src/magnetometer/data/data_interface.h \
     src/magnetometer/data/ellipsoid.h \
-    src/magnetometer/geometry/ellipsoid.h \
     src/magnetometer/graph/graph.h \
     src/magnetometer/gui/fmain.h
 
 SOURCES += \
+    src/common/geometry/ellipsoid.cpp \
+    src/common/calibration/variables_center.cpp \
+    src/common/calibration/variables_radius.cpp \
     src/accelerometer/data/data_interface.cpp \
     src/accelerometer/graph/graph.cpp \
     src/accelerometer/gui/fmain.cpp \
     src/accelerometer/main.cpp \
     src/magnetometer/calibration/calibrator.cpp \
     src/magnetometer/calibration/cost_objective.cpp \
-    src/magnetometer/calibration/variables_center.cpp \
-    src/magnetometer/calibration/variables_radius.cpp \
     src/magnetometer/calibration/variables_rotation.cpp \
     src/magnetometer/data/data_interface.cpp \
-    src/magnetometer/geometry/ellipsoid.cpp \
     src/magnetometer/graph/graph.cpp \
     src/magnetometer/gui/fmain.cpp \
     src/magnetometer/main.cpp

@@ -271,7 +271,7 @@ void calibrator::thread_worker()
         calibrator::m_fit_rotation = variables_rotation->GetValues();
 
         // Build up a fit ellipse.
-        ellipsoid fit;
+        common::ellipsoid fit;
         fit.set_center(calibrator::m_fit_center);
         fit.set_radius(calibrator::m_fit_radius);
         fit.set_rotation(calibrator::m_fit_rotation);
