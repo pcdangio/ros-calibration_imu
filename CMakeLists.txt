@@ -22,7 +22,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 find_package(Qt5 REQUIRED COMPONENTS
     Widgets
-    DataVisualization)
+    DataVisualization
+    Charts)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -157,7 +158,8 @@ add_executable(accelerometer
     src/accelerometer/main.cpp
     src/accelerometer/gui/fmain.ui
     src/accelerometer/gui/fmain.cpp
-    src/accelerometer/data/data_interface.cpp)
+    src/accelerometer/data/data_interface.cpp
+    src/accelerometer/graph/graph.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -177,7 +179,8 @@ target_link_libraries(magnetometer
 
 target_link_libraries(accelerometer
     ${catkin_LIBRARIES}
-    Qt5::Widgets)
+    Qt5::Widgets
+    Qt5::Charts)
 
 #############
 ## Install ##

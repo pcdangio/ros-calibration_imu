@@ -1,4 +1,4 @@
-QT += core gui widgets
+QT += core gui widgets charts
 
 TARGET = calibration_imu
 TEMPLATE = app
@@ -21,6 +21,7 @@ FORMS += \
 
 HEADERS += \
     src/accelerometer/data/data_interface.h \
+    src/accelerometer/graph/graph.h \
     src/accelerometer/gui/fmain.h \
     src/magnetometer/calibration/calibrator.h \
     src/magnetometer/calibration/cost_objective.h \
@@ -35,6 +36,7 @@ HEADERS += \
 
 SOURCES += \
     src/accelerometer/data/data_interface.cpp \
+    src/accelerometer/graph/graph.cpp \
     src/accelerometer/gui/fmain.cpp \
     src/accelerometer/main.cpp \
     src/magnetometer/calibration/calibrator.cpp \
