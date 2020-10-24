@@ -60,7 +60,7 @@ graph::graph()
     graph::m_series_measurement->attachAxis(axis_x);
     graph::m_series_fit->attachAxis(axis_x);
     graph::m_series_calibration->attachAxis(axis_x);
-    graph::m_series_calibration->attachAxis(axis_x);
+    graph::m_series_truth->attachAxis(axis_x);
 
     // Set up Y axis.
     QtCharts::QValueAxis* axis_y = new QtCharts::QValueAxis();
