@@ -226,7 +226,7 @@ void calibrator::thread_worker()
             {
                 bb_min(i) = (*point)(i);
             }
-            else if((*point)(i) > bb_max(i))
+            if((*point)(i) > bb_max(i))
             {
                 bb_max(i) = (*point)(i);
             }

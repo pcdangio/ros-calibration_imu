@@ -168,13 +168,13 @@ void calibrator::thread_worker(Eigen::Matrix<double, 3, 6> data_set, double true
     bb_max.fill(-std::numeric_limits<double>::infinity());
     for(uint32_t j = 0; j < data_set.cols(); ++j)
     {
-        for(uint8_t i = 0; i < 3; ++i)
+        for(uint32_t i = 0; i < 3; ++i)
         {
             if(data_set(i,j) < bb_min(i))
             {
                 bb_min(i) = data_set(i,j);
             }
-            else if(data_set(i,j) > bb_max(i))
+            if(data_set(i,j) > bb_max(i))
             {
                 bb_max(i) = data_set(i,j);
             }
