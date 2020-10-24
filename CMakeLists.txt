@@ -159,7 +159,12 @@ add_executable(accelerometer
     src/accelerometer/gui/fmain.ui
     src/accelerometer/gui/fmain.cpp
     src/accelerometer/data/data_interface.cpp
-    src/accelerometer/graph/graph.cpp)
+    src/accelerometer/graph/graph.cpp
+    src/common/geometry/ellipsoid.cpp
+    src/common/calibration/variables_center.cpp
+    src/common/calibration/variables_radius.cpp
+    src/accelerometer/calibration/cost_term.cpp
+    src/accelerometer/calibration/calibrator.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

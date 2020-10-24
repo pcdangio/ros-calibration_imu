@@ -20,6 +20,8 @@ FORMS += \
     src/magnetometer/gui/fmain.ui
 
 HEADERS += \
+    src/accelerometer/calibration/calibrator.h \
+    src/accelerometer/calibration/cost_term.h \
     src/common/geometry/ellipsoid.h \
     src/common/calibration/variables_center.h \
     src/common/calibration/variables_radius.h \
@@ -35,6 +37,8 @@ HEADERS += \
     src/magnetometer/gui/fmain.h
 
 SOURCES += \
+    src/accelerometer/calibration/calibrator.cpp \
+    src/accelerometer/calibration/cost_term.cpp \
     src/common/geometry/ellipsoid.cpp \
     src/common/calibration/variables_center.cpp \
     src/common/calibration/variables_radius.cpp \
