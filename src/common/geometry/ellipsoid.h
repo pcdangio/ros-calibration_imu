@@ -5,7 +5,7 @@
 
 #include <eigen3/Eigen/Dense>
 
-#include <QtDataVisualization/QScatterDataArray>
+#include <vector>
 
 namespace common
 {
@@ -51,9 +51,9 @@ public:
     /// \param point The cartesian point to calculate the residual for.
     /// \returns The residual of the point.
     double residual(const Eigen::Vector3d& point);
-    /// \brief Draws the ellipsoid into a QScatterDataArray.
-    /// \param points The QScatterDataArray to draw the ellipsoid into.
-    void draw(QtDataVisualization::QScatterDataArray* points) const;
+    /// \brief Draws the ellipsoid into a vector of points.
+    /// \param points The vector to draw the ellipsoid into.
+    void draw(std::vector<Eigen::Vector3d>& points) const;
 
 private:
     // PARAMETERS

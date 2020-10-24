@@ -92,6 +92,7 @@ private:
     bool f_indicate_new_point;
 
     // PLOT METHODS
+    QtDataVisualization::QScatterDataArray* draw(const std::vector<Eigen::Vector3d> &source);
     /// \brief Updates the axis ranges of the 3D plot.
     void autoscale();
     /// \brief Calculates a range for a data series.

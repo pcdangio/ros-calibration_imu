@@ -99,14 +99,14 @@ double ellipsoid::residual(const Eigen::Vector3d& point)
     // Return residual.
     return ellipsoid::m_v(0,0) - 1.0;
 }
-void ellipsoid::draw(QtDataVisualization::QScatterDataArray *points) const
+void ellipsoid::draw(std::vector<Eigen::Vector3d> &points) const
 {
     // Set number of angles to a factor of 4.
     uint32_t n_angles = 20;
 
     // Set up points vector for receiving drawn ellipse.
-    points->clear();
-    points->reserve(n_angles * n_angles);
+    points.clear();
+    points.reserve(n_angles * n_angles);
 
     // Use parametric equations for ellipsoid.
 
@@ -129,7 +129,8 @@ void ellipsoid::draw(QtDataVisualization::QScatterDataArray *points) const
             // Translate point.
             pt = pr + ellipsoid::m_center;
 
-            points->append(QVector3D(pt(0), pt(2), pt(1)));
+            // Add point.
+            points.push_back(pt);
         }
     }
 }

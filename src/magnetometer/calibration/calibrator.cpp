@@ -21,6 +21,11 @@ calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_inter
     // Store data interface.
     calibrator::m_data_interface = data_interface;
 
+    // Initialize fit.
+    calibrator::m_fit_center.setZero();
+    calibrator::m_fit_radius.setZero();
+    calibrator::m_fit_rotation.setZero();
+
     // Initialize calibration.
     calibrator::m_calibration_transform.setIdentity();
     calibrator::m_calibration_translation.setZero();
