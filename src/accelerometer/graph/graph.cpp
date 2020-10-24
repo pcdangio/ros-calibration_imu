@@ -139,10 +139,10 @@ void graph::new_calibration(Eigen::Matrix3d calibration)
 void graph::new_truth(double truth)
 {
     QList<QPointF> points;
-    points.append(QPointF(3, truth));
-    points.append(QPointF(-0.1, truth));
+    points.append(QPointF(10, truth));
+    points.append(QPointF(-10, truth));
 
-    points.append(QPointF(-0.1, -truth));
-    points.append(QPointF(3, -truth));
+    points.append(QPointF(-10, -truth));
+    points.append(QPointF(10, -truth));
     graph::m_series_truth->replace(points);
 }

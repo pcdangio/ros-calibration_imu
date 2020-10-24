@@ -75,6 +75,13 @@ void fmain::on_button_start_collection_clicked()
     fmain::ui->button_grab_right->setEnabled(true);
     fmain::ui->button_grab_front->setEnabled(true);
     fmain::ui->button_grab_rear->setEnabled(true);
+
+    // Enable measurement plot.
+    fmain::m_graph->set_measurement_visible(true);
+    // Disable fit/calibration plots.
+    fmain::m_graph->set_fit_visible(false);
+    fmain::m_graph->set_calibration_visible(false);
+    fmain::m_graph->set_truth_visible(false);
 }
 void fmain::on_button_stop_collection_clicked()
 {
@@ -90,6 +97,9 @@ void fmain::on_button_stop_collection_clicked()
     fmain::ui->button_grab_right->setEnabled(false);
     fmain::ui->button_grab_front->setEnabled(false);
     fmain::ui->button_grab_rear->setEnabled(false);
+
+    // Disable measurement plot.
+    fmain::m_graph->set_measurement_visible(false);
 }
 void fmain::on_button_grab_bottom_clicked()
 {
@@ -189,6 +199,8 @@ void fmain::calibration_completed(bool success)
     // Print into textedit.
     fmain::ui->textedit_calibration->setPlainText(QString::fromStdString(fmain::m_calibrator->print_calibration()));
 
+    // Disable measurement plot.
+    fmain::m_graph->set_measurement_visible(false);
     // Enable fit/calibration plots.
     fmain::m_graph->set_fit_visible(true);
     fmain::m_graph->set_calibration_visible(true);
