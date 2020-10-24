@@ -8,6 +8,8 @@ class fmain;
 }
 
 #include <accelerometer/data/data_interface.h>
+#include <accelerometer/calibration/calibrator.h>
+#include <accelerometer/graph/graph.h>
 
 #include <QTimer>
 
@@ -34,6 +36,10 @@ private slots:
     void on_button_grab_rear_clicked();
     void on_button_clear_data_clicked();
 
+    // CALIBRATION
+    void on_button_calibrate_clicked();
+    void calibration_completed(bool success);
+
 private:
     // UI
     Ui::fmain *ui;
@@ -41,6 +47,10 @@ private:
     // COMPONENTS
     /// \brief The application's data_interface.
     std::shared_ptr<accelerometer::data_interface> m_data_interface;
+    /// \brief The application's calibrator.
+    std::shared_ptr<accelerometer::calibrator> m_calibrator;
+    /// \brief The application's graph.
+    std::shared_ptr<accelerometer::graph> m_graph;
 
     // ROS
     /// \brief Stores the node's handle.

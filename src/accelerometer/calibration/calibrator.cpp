@@ -231,6 +231,22 @@ void calibrator::thread_worker(Eigen::Matrix<double, 3, 6> data_set, double true
 
         // Set translation vector.
         calibrator::m_calibration_translation = -fit_center;
+
+        // Calculate fit points.
+        Eigen::Matrix3d fit_points;
+        fit_points.row(0) = fit_center - fit_radius;
+        fit_points.row(1) = fit_center;
+        fit_points.row(2) = fit_center + fit_radius;
+        calibrator::new_fit(fit_points);
+
+        // Calcuate calibration points.
+        Eigen::Matrix3d calibration_points;
+        for(uint32_t i = 0; i < 3; ++i)
+        {
+            Eigen::Vector3d row = fit_points.row(i).transpose() + calibrator::m_calibration_translation;
+            calibration_points.row(i).noalias() = calibrator::m_calibration_transform * row;
+        }
+        calibrator::new_calibration(calibration_points);
     }
 
     // Signal completion.

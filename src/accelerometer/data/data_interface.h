@@ -52,8 +52,8 @@ public:
     /// \returns TRUE if the data set is complete, otherwise FALSE.
     bool dataset_complete() const;
     /// \brief Gets a copy of the dataset to work with.
-    /// \param data The matrix to copy the data set into.
-    void get_dataset(Eigen::Matrix<double, 3, 6>& data) const;
+    /// \returns A copy of the data set.
+    Eigen::Matrix<double, 3, 6> get_dataset() const;
     /// \brief Empties the data set.
     void clear_dataset();
 

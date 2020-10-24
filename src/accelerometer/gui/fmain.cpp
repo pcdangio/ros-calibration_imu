@@ -3,13 +3,15 @@
 
 #include <QMessageBox>
 
+Q_DECLARE_METATYPE(Eigen::Matrix3d)
+
 // CONSTRUCTORS
 fmain::fmain(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::fmain)
 {
     // Set up UI.
-    fmain::ui->setupUi(this);
+    ui->setupUi(this);
     fmain::ui->progress_bar_calibration->setVisible(false);
 
     // Set up node handle.
@@ -17,12 +19,25 @@ fmain::fmain(QWidget *parent) :
 
     // Set up the components.
     fmain::m_data_interface = std::make_shared<accelerometer::data_interface>(fmain::m_node);
+    fmain::m_calibrator = std::make_shared<accelerometer::calibrator>();
+    fmain::m_graph = std::make_shared<accelerometer::graph>();
+
+    // Make component connections.
+    qRegisterMetaType<Eigen::Matrix3d>();
+    connect(fmain::m_data_interface.get(), &accelerometer::data_interface::new_measurement, fmain::m_graph.get(), &accelerometer::graph::new_measurement);
+    connect(fmain::m_calibrator.get(), &accelerometer::calibrator::new_fit, fmain::m_graph.get(), &accelerometer::graph::new_fit);
+    connect(fmain::m_calibrator.get(), &accelerometer::calibrator::new_calibration, fmain::m_graph.get(), &accelerometer::graph::new_calibration);
+    connect(fmain::m_calibrator.get(), &accelerometer::calibrator::calibration_completed, this, &fmain::calibration_completed);
+
+    // Set up chart.
+    fmain::ui->chart->setChart(fmain::m_graph->get_chart());
+    fmain::m_graph->set_fit_visible(false);
+    fmain::m_graph->set_calibration_visible(false);
 
     // Start ros spinner.
     connect(&(fmain::m_ros_spinner), &QTimer::timeout, this, &fmain::ros_spin);
     fmain::m_ros_spinner.start(10);
 }
-
 fmain::~fmain()
 {
     // Clean up UI.
@@ -42,7 +57,7 @@ void fmain::ros_spin()
     }
 }
 
-// DATA COLLECTION
+// SLOTS: DATA COLLECTION
 void fmain::on_button_start_collection_clicked()
 {
     // Start collection.
@@ -127,4 +142,51 @@ void fmain::on_button_clear_data_clicked()
     fmain::ui->label_grab_right->setStyleSheet("");
     fmain::ui->label_grab_front->setStyleSheet("");
     fmain::ui->label_grab_rear->setStyleSheet("");
+}
+
+// SLOTS: CALIBRATION
+void fmain::on_button_calibrate_clicked()
+{
+    // Check if dataset is complete.
+    if(!fmain::m_data_interface->dataset_complete())
+    {
+        QMessageBox message_box(QMessageBox::Icon::Warning, "Error", "Not all orientations have been grabbed.", QMessageBox::StandardButton::Ok);
+        message_box.exec();
+        return;
+    }
+
+    // Get the true field strength.
+    bool field_parsed;
+    double true_field_strength = fmain::ui->lineedit_true_gravity->text().toDouble(&field_parsed);
+    if(!field_parsed || true_field_strength <= 0)
+    {
+        QMessageBox message_box(QMessageBox::Icon::Warning, "Error", "Invalid true gravity field.", QMessageBox::StandardButton::Ok);
+        message_box.exec();
+        return;
+    }
+
+    // Start the calibrator.
+    fmain::m_calibrator->start(fmain::m_data_interface->get_dataset(), true_field_strength);
+
+    // Show the progress bar.
+    fmain::ui->progress_bar_calibration->setVisible(true);
+}
+void fmain::calibration_completed(bool success)
+{
+    // Display error if failed.
+    if(!success)
+    {
+        QMessageBox message_box(QMessageBox::Icon::Warning, "Error", "Calibration failed.", QMessageBox::StandardButton::Ok);
+        message_box.exec();
+    }
+
+    // Hide progress bar.
+    fmain::ui->progress_bar_calibration->setVisible(false);
+
+    // Print into textedit.
+    fmain::ui->textedit_calibration->setPlainText(QString::fromStdString(fmain::m_calibrator->print_calibration()));
+
+    // Enable fit/calibration plots.
+    fmain::m_graph->set_fit_visible(true);
+    fmain::m_graph->set_calibration_visible(true);
 }

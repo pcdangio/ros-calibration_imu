@@ -82,9 +82,9 @@ bool data_interface::dataset_complete() const
     // If this point reached, all columns have been verified as nonzero.
     return true;
 }
-void data_interface::get_dataset(Eigen::Matrix<double, 3, 6>& data) const
+Eigen::Matrix<double, 3, 6> data_interface::get_dataset() const
 {
-    data = data_interface::m_data;
+    return data_interface::m_data;
 }
 void data_interface::clear_dataset()
 {
