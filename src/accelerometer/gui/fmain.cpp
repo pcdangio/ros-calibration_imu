@@ -194,3 +194,52 @@ void fmain::calibration_completed(bool success)
     fmain::m_graph->set_calibration_visible(true);
     fmain::m_graph->set_truth_visible(true);
 }
+
+void fmain::on_button_save_json_clicked()
+{
+    // Create save dialog.
+    QFileDialog save_dialog(this);
+    save_dialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+    save_dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+    save_dialog.setNameFilter("JSON file (*.json)");
+    save_dialog.setDefaultSuffix("json");
+    save_dialog.setViewMode(QFileDialog::ViewMode::Detail);
+    save_dialog.setWindowTitle("Save JSON Calibration");
+
+    // Run dialog.
+    if(save_dialog.exec())
+    {
+        // Save data.
+        std::string json_file = save_dialog.selectedFiles().first().toStdString();
+        if(!fmain::m_calibrator->save_calibration_json(json_file))
+        {
+            // Display error.
+            QMessageBox message_box(QMessageBox::Icon::Warning, "", "Save JSON calibration failed, check ROS logs for reason.", QMessageBox::StandardButton::Ok);
+            message_box.exec();
+        }
+    }
+}
+void fmain::on_button_save_yaml_clicked()
+{
+    // Create save dialog.
+    QFileDialog save_dialog(this);
+    save_dialog.setAcceptMode(QFileDialog::AcceptMode::AcceptSave);
+    save_dialog.setFileMode(QFileDialog::FileMode::AnyFile);
+    save_dialog.setNameFilter("YAML file (*.yaml)");
+    save_dialog.setDefaultSuffix("yaml");
+    save_dialog.setViewMode(QFileDialog::ViewMode::Detail);
+    save_dialog.setWindowTitle("Save YAML Calibration");
+
+    // Run dialog.
+    if(save_dialog.exec())
+    {
+        // Save data.
+        std::string yaml_file = save_dialog.selectedFiles().first().toStdString();
+        if(!fmain::m_calibrator->save_calibration_yaml(yaml_file))
+        {
+            // Display error.
+            QMessageBox message_box(QMessageBox::Icon::Warning, "", "Save YAML calibration failed, check ROS logs for reason.", QMessageBox::StandardButton::Ok);
+            message_box.exec();
+        }
+    }
+}

@@ -40,6 +40,10 @@ private slots:
     void on_button_calibrate_clicked();
     void calibration_completed(bool success);
 
+    void on_button_save_json_clicked();
+
+    void on_button_save_yaml_clicked();
+
 private:
     // UI
     Ui::fmain *ui;
