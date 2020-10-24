@@ -53,6 +53,9 @@ signals:
     /// \brief Indicates that a new calibration has been calculated.
     /// \param calibration The newly calculated calibration.
     void new_calibration(Eigen::Matrix3d calibration);
+    /// \brief Indicates a new truth value.
+    /// \param truth The new truth value.
+    void new_truth(double truth);
     /// \brief Indicates that the calibration routine has completed.
     /// \param success TRUE if the calibration succeeded, otherwise FALSE.
     void calibration_completed(bool success);

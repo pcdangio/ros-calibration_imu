@@ -42,6 +42,15 @@ graph::graph()
         graph::m_series_calibration->append(new QtCharts::QBoxSet());
     }
 
+    // Set up truth series.
+    graph::m_series_truth = new QtCharts::QLineSeries();
+    graph::m_series_truth->setName("True Gravity");
+    graph::m_chart->addSeries(graph::m_series_truth);
+    auto pen_truth = graph::m_series_truth->pen();
+    pen_truth.setStyle(Qt::PenStyle::DotLine);
+    graph::m_series_truth->setPen(pen_truth);
+
+
     // Set up X axis.
     QtCharts::QBarCategoryAxis* axis_x = new QtCharts::QBarCategoryAxis();
     axis_x->append("x");
@@ -50,6 +59,7 @@ graph::graph()
     graph::m_chart->addAxis(axis_x, Qt::AlignBottom);
     graph::m_series_measurement->attachAxis(axis_x);
     graph::m_series_fit->attachAxis(axis_x);
+    graph::m_series_calibration->attachAxis(axis_x);
     graph::m_series_calibration->attachAxis(axis_x);
 
     // Set up Y axis.
@@ -60,6 +70,7 @@ graph::graph()
     graph::m_series_measurement->attachAxis(axis_y);
     graph::m_series_fit->attachAxis(axis_y);
     graph::m_series_calibration->attachAxis(axis_y);
+    graph::m_series_truth->attachAxis(axis_y);
 }
 graph::~graph()
 {
@@ -84,6 +95,10 @@ void graph::set_fit_visible(bool visible)
 void graph::set_calibration_visible(bool visible)
 {
     graph::m_series_calibration->setVisible(visible);
+}
+void graph::set_truth_visible(bool visible)
+{
+    graph::m_series_truth->setVisible(visible);
 }
 
 // PLOT UPDATE
@@ -120,4 +135,14 @@ void graph::new_calibration(Eigen::Matrix3d calibration)
         boxset[j]->setValue(3, calibration(2,j));
         boxset[j]->setValue(4, calibration(2,j));
     }
+}
+void graph::new_truth(double truth)
+{
+    QList<QPointF> points;
+    points.append(QPointF(3, truth));
+    points.append(QPointF(-0.1, truth));
+
+    points.append(QPointF(-0.1, -truth));
+    points.append(QPointF(3, -truth));
+    graph::m_series_truth->replace(points);
 }

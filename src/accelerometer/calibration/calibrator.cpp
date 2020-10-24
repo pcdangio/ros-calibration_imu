@@ -247,6 +247,9 @@ void calibrator::thread_worker(Eigen::Matrix<double, 3, 6> data_set, double true
             calibration_points.row(i).noalias() = calibrator::m_calibration_transform * row;
         }
         calibrator::new_calibration(calibration_points);
+
+        // Signal new true gravity vector.
+        calibrator::new_truth(true_gravity_vector);
     }
 
     // Signal completion.

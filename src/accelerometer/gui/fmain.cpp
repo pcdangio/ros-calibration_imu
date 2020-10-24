@@ -3,6 +3,7 @@
 
 #include <QMessageBox>
 
+// Register Eigen matrix as datatype for signals/slots
 Q_DECLARE_METATYPE(Eigen::Matrix3d)
 
 // CONSTRUCTORS
@@ -27,12 +28,14 @@ fmain::fmain(QWidget *parent) :
     connect(fmain::m_data_interface.get(), &accelerometer::data_interface::new_measurement, fmain::m_graph.get(), &accelerometer::graph::new_measurement);
     connect(fmain::m_calibrator.get(), &accelerometer::calibrator::new_fit, fmain::m_graph.get(), &accelerometer::graph::new_fit);
     connect(fmain::m_calibrator.get(), &accelerometer::calibrator::new_calibration, fmain::m_graph.get(), &accelerometer::graph::new_calibration);
+    connect(fmain::m_calibrator.get(), &accelerometer::calibrator::new_truth, fmain::m_graph.get(), &accelerometer::graph::new_truth);
     connect(fmain::m_calibrator.get(), &accelerometer::calibrator::calibration_completed, this, &fmain::calibration_completed);
 
     // Set up chart.
     fmain::ui->chart->setChart(fmain::m_graph->get_chart());
     fmain::m_graph->set_fit_visible(false);
     fmain::m_graph->set_calibration_visible(false);
+    fmain::m_graph->set_truth_visible(false);
 
     // Start ros spinner.
     connect(&(fmain::m_ros_spinner), &QTimer::timeout, this, &fmain::ros_spin);
@@ -189,4 +192,5 @@ void fmain::calibration_completed(bool success)
     // Enable fit/calibration plots.
     fmain::m_graph->set_fit_visible(true);
     fmain::m_graph->set_calibration_visible(true);
+    fmain::m_graph->set_truth_visible(true);
 }

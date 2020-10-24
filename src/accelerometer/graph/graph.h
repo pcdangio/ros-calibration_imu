@@ -8,6 +8,7 @@
 #include <QtCharts/QChart>
 #include <QtCharts/QBarSeries>
 #include <QtCharts/QBoxPlotSeries>
+#include <QtCharts/QLineSeries>
 
 #include <eigen3/Eigen/Dense>
 
@@ -38,6 +39,9 @@ public:
     /// \brief Sets the visibility of the calibration plot.
     /// \param visibile The visibility to set.
     void set_calibration_visible(bool visible);
+    /// \brief Sets the visibility of the truth plot.
+    /// \param visible The visibility to set.
+    void set_truth_visible(bool visible);
 
 public slots:
     // PLOT UPDATE
@@ -50,6 +54,9 @@ public slots:
     /// \brief Updates the plot with a new calibration.
     /// \param calibration The new calibration.
     void new_calibration(Eigen::Matrix3d calibration);
+    /// \brief Updates the plot with a new truth line.
+    /// \param double The new truth value.
+    void new_truth(double truth);
 
 private:
     /// \brief The graph's internal chart instance.
@@ -61,6 +68,8 @@ private:
     QtCharts::QBoxPlotSeries* m_series_fit;
     /// \brief The calibration series.
     QtCharts::QBoxPlotSeries* m_series_calibration;
+    /// \brief The truth series.
+    QtCharts::QLineSeries* m_series_truth;
 };
 
 }
