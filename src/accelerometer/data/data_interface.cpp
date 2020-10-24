@@ -30,6 +30,9 @@ void data_interface::start_collection()
 {
     if(!data_interface::f_is_collecting)
     {
+        // Set flag.
+        data_interface::f_is_collecting = true;
+
         // Clear the buffer.
         data_interface::m_buffer.clear();
 
@@ -44,6 +47,7 @@ void data_interface::stop_collection()
 {
     if(data_interface::f_is_collecting)
     {
+        data_interface::f_is_collecting = false;
         data_interface::m_subscriber.shutdown();
     }
 }
