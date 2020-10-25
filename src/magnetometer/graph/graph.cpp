@@ -1,5 +1,7 @@
 #include "graph.h"
 
+#include "common/geometry/ellipsoid.h"
+
 using namespace magnetometer;
 
 // CONSTRUCTORS
@@ -152,13 +154,13 @@ void graph::update_calibration_plots(bool calibration_success)
         // Scale center and radius.
         fit_center *= graph::m_field_scale;
         fit_radius *= graph::m_field_scale;
-        magnetometer::ellipsoid fit;
+        common::ellipsoid fit;
         fit.set_center(fit_center);
         fit.set_radius(fit_radius);
         fit.set_rotation(fit_rotation);
-        QtDataVisualization::QScatterDataArray* fit_points = new QtDataVisualization::QScatterDataArray();
+        std::vector<Eigen::Vector3d> fit_points;
         fit.draw(fit_points);
-        graph::m_series_fit->dataProxy()->resetArray(fit_points);
+        graph::m_series_fit->dataProxy()->resetArray(graph::draw(fit_points));
 
         // Draw calibrated points.
         // Get calibration.
@@ -193,7 +195,7 @@ void graph::update_truth_plot(double true_field_strength)
     // Draw truth.
 
     // Create truth ellipsoid.
-    magnetometer::ellipsoid truth;
+    common::ellipsoid truth;
     Eigen::Vector3d center, radius, rotation;
     center.setZero();
     radius.fill(true_field_strength * graph::m_field_scale);
@@ -203,12 +205,23 @@ void graph::update_truth_plot(double true_field_strength)
     truth.set_rotation(rotation);
 
     // Draw ellipsoid.
-    QtDataVisualization::QScatterDataArray* truth_points = new QtDataVisualization::QScatterDataArray();
+    std::vector<Eigen::Vector3d> truth_points;
     truth.draw(truth_points);
-    graph::m_series_truth->dataProxy()->resetArray(truth_points);
+    graph::m_series_truth->dataProxy()->resetArray(graph::draw(truth_points));
 }
 
 // PLOT METHODS
+QtDataVisualization::QScatterDataArray *graph::draw(const std::vector<Eigen::Vector3d>& source)
+{
+    QtDataVisualization::QScatterDataArray* output = new QtDataVisualization::QScatterDataArray();
+
+    for(auto point = source.cbegin(); point != source.cend(); ++point)
+    {
+        output->append(QVector3D((*point)(0), (*point)(2), (*point)(1)));
+    }
+
+    return output;
+}
 void graph::autoscale()
 {
     // Determine min/max x/y/z values of all points in all series.

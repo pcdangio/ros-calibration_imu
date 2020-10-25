@@ -1,25 +1,25 @@
-/// \file magnetometer/calibration/cost_objective.h
-/// \brief Defines the ifopt::cost_objective class.
-#ifndef COST_OBJECTIVE_H
-#define COST_OBJECTIVE_H
+/// \file magnetometer/calibration/cost_term.h
+/// \brief Defines the ifopt::cost_term class.
+#ifndef COST_TERM_H
+#define COST_TERM_H
 
 #include <ifopt/cost_term.h>
 
-#include "magnetometer/geometry/ellipsoid.h"
+#include "common/geometry/ellipsoid.h"
 
 /// \brief Includes software components related to optimization with the IFOPT ROS package.
 namespace ifopt
 {
     /// \brief The objective function for the ellipse fit.
-    class cost_objective
+    class cost_term
         : public CostTerm
     {
     public:
         // CONSTRUCTORS
-        /// \brief Instantiates a new cost_objective instance.
+        /// \brief Instantiates a new cost_term instance.
         /// \param data_points The vector of data points to fit the ellipse to.
-        cost_objective(std::shared_ptr<std::vector<Eigen::Vector3d>>& data_points);
-        ~cost_objective();
+        cost_term(std::shared_ptr<std::vector<Eigen::Vector3d>>& data_points);
+        ~cost_term();
 
         // OVERRIDES
         double GetCost() const override;
@@ -40,7 +40,7 @@ namespace ifopt
 
         // PREALLOCATIONS
         /// \brief A preallocated ellipse for calculation.
-        magnetometer::ellipsoid* m_ellipsoid;
+        common::ellipsoid* m_ellipsoid;
     };
 }
 

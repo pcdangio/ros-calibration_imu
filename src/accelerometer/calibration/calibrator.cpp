@@ -1,31 +1,19 @@
-#include "magnetometer/calibration/calibrator.h"
+#include "accelerometer/calibration/calibrator.h"
 
 #include <ros/node_handle.h>
 
 #include "common/calibration/variables_center.h"
 #include "common/calibration/variables_radius.h"
-#include "magnetometer/calibration/variables_rotation.h"
-#include "magnetometer/calibration/cost_term.h"
+#include "accelerometer/calibration/cost_term.h"
 
 #include <fstream>
 #include <boost/property_tree/json_parser.hpp>
 
-using namespace magnetometer;
+using namespace accelerometer;
 
 // CONSTRUCTORS
-calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_interface)
+calibrator::calibrator()
 {
-    // Initialize true field strength.
-    calibrator::m_true_field_strength = 0;
-
-    // Store data interface.
-    calibrator::m_data_interface = data_interface;
-
-    // Initialize fit.
-    calibrator::m_fit_center.setZero();
-    calibrator::m_fit_radius.setZero();
-    calibrator::m_fit_rotation.setZero();
-
     // Initialize calibration.
     calibrator::m_calibration_transform.setIdentity();
     calibrator::m_calibration_translation.setZero();
@@ -42,45 +30,23 @@ calibrator::~calibrator()
 }
 
 // METHODS
-bool calibrator::start(double true_field_strength)
+bool calibrator::start(const Eigen::Matrix<double, 3, 6>& data_set, double true_gravity_vector)
 {
     // Check if thread is running.
     if(!calibrator::m_running)
     {
-        // Store true field strength.
-        calibrator::m_true_field_strength = true_field_strength;
-
-        // Reset fit.
-        calibrator::m_fit_center.setZero();
-        calibrator::m_fit_radius.setZero();
-        calibrator::m_fit_rotation.setZero();
-
         // Reset calibration.
         calibrator::m_calibration_transform.setIdentity();
         calibrator::m_calibration_translation.setZero();
 
         // Start optimization thread to generate fit.
-        calibrator::m_thread = boost::thread(&calibrator::thread_worker, this);
+        calibrator::m_thread = boost::thread(boost::bind(&calibrator::thread_worker, this, data_set, true_gravity_vector));
         return true;
     }
     else
     {
         return false;
     }
-}
-
-// RESULTS
-void calibrator::get_fit(Eigen::Vector3d& center, Eigen::Vector3d& radius, Eigen::Vector3d& rotation)
-{
-    // Return ellipsoid parameters.
-    center = calibrator::m_fit_center;
-    radius = calibrator::m_fit_radius;
-    rotation = calibrator::m_fit_rotation;
-}
-void calibrator::get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& translation)
-{
-    transform = calibrator::m_calibration_transform;
-    translation = calibrator::m_calibration_translation;
 }
 
 // CALIBRATION SAVING
@@ -191,44 +157,26 @@ bool calibrator::save_calibration_yaml(std::string filepath)
 }
 
 // THREADING
-void calibrator::thread_worker()
+void calibrator::thread_worker(Eigen::Matrix<double, 3, 6> data_set, double true_gravity_vector)
 {
     // Flag thread as running.
     calibrator::m_running = true;
-
-    // Create a local copy of points to fit from the data interface.
-    std::shared_ptr<std::vector<Eigen::Vector3d>> data_points = std::make_shared<std::vector<Eigen::Vector3d>>();
-
-    // Copy the points locally and scale them.
-    data_points->clear();
-    Eigen::Vector3d new_point;
-    for(uint32_t i = 0; i < calibrator::m_data_interface->n_points(); ++i)
-    {
-        // Grab point from data interface.
-        calibrator::m_data_interface->get_point(i, new_point);
-
-        // Scale point.
-        new_point *= calibrator::m_field_scale;
-
-        // Add point.
-        data_points->push_back(new_point);
-    }
 
     // Calculate the bounding box and it's parameters.
     Eigen::Vector3d bb_min, bb_max;
     bb_min.fill(std::numeric_limits<double>::infinity());
     bb_max.fill(-std::numeric_limits<double>::infinity());
-    for(auto point = data_points->cbegin(); point != data_points->cend(); ++point)
+    for(uint32_t j = 0; j < data_set.cols(); ++j)
     {
-        for(uint8_t i = 0; i < 3; ++i)
+        for(uint32_t i = 0; i < 3; ++i)
         {
-            if((*point)(i) < bb_min(i))
+            if(data_set(i,j) < bb_min(i))
             {
-                bb_min(i) = (*point)(i);
+                bb_min(i) = data_set(i,j);
             }
-            if((*point)(i) > bb_max(i))
+            if(data_set(i,j) > bb_max(i))
             {
-                bb_max(i) = (*point)(i);
+                bb_max(i) = data_set(i,j);
             }
         }
     }
@@ -240,9 +188,8 @@ void calibrator::thread_worker()
 
     // Set up the optimization components.
     std::shared_ptr<ifopt::variables_center> variables_center = std::make_shared<ifopt::variables_center>();
-    std::shared_ptr<ifopt::variables_rotation> variables_rotation = std::make_shared<ifopt::variables_rotation>();
     std::shared_ptr<ifopt::variables_radius> variables_radius = std::make_shared<ifopt::variables_radius>();
-    std::shared_ptr<ifopt::cost_term> cost_term = std::make_shared<ifopt::cost_term>(data_points);
+    std::shared_ptr<ifopt::cost_term> cost_term = std::make_shared<ifopt::cost_term>(data_set);
 
     // Set initial guess and range for each variable.
     // Center
@@ -251,8 +198,6 @@ void calibrator::thread_worker()
     // Radius
     variables_radius->SetVariables(bb_radius);
     variables_radius->set_range(bb_radius * 0.5, bb_radius * 1.5);
-    // Rotation
-    variables_rotation->set_max(M_PI);
 
     // Set component parameters.
     cost_term->p_gradient_perturbation(0.000001);
@@ -260,7 +205,6 @@ void calibrator::thread_worker()
     // Set up the optimization problem.
     ifopt::Problem problem;
     problem.AddVariableSet(variables_center);
-    problem.AddVariableSet(variables_rotation);
     problem.AddVariableSet(variables_radius);
     problem.AddCostSet(cost_term);
 
@@ -275,38 +219,37 @@ void calibrator::thread_worker()
     // If solved, calculate calibration.
     if(solved)
     {
-        // Extract and scale fit parameters.
-        calibrator::m_fit_center = variables_center->GetValues() / calibrator::m_field_scale;
-        calibrator::m_fit_radius = variables_radius->GetValues() / calibrator::m_field_scale;
-        calibrator::m_fit_rotation = variables_rotation->GetValues();
-
-        // Build up a fit ellipse.
-        common::ellipsoid fit;
-        fit.set_center(calibrator::m_fit_center);
-        fit.set_radius(calibrator::m_fit_radius);
-        fit.set_rotation(calibrator::m_fit_rotation);
+        // Extract fit parameters.
+        auto fit_center = variables_center->GetValues();
+        auto fit_radius = variables_radius->GetValues();
 
         // Calculate scale transform.
-        Eigen::Vector3d fit_radius;
-        fit.get_radius(fit_radius);
-        Eigen::Matrix3d scale;
-        scale.setIdentity();
-        scale(0,0) = calibrator::m_true_field_strength / fit_radius(0);
-        scale(1,1) = calibrator::m_true_field_strength / fit_radius(1);
-        scale(2,2) = calibrator::m_true_field_strength / fit_radius(2);
-
-        // Get rotation and transpose matrices.
-        Eigen::Matrix3d rotation, rotation_t;
-        fit.get_r(rotation);
-        fit.get_rt(rotation_t);
-
-        // Calculate and set transform matrix.
-        calibrator::m_calibration_transform.noalias() = rotation * scale * rotation_t;
+        calibrator::m_calibration_transform.setZero();
+        calibrator::m_calibration_transform(0,0) = true_gravity_vector / fit_radius(0);
+        calibrator::m_calibration_transform(1,1) = true_gravity_vector / fit_radius(1);
+        calibrator::m_calibration_transform(2,2) = true_gravity_vector / fit_radius(2);
 
         // Set translation vector.
-        Eigen::Vector3d center;
-        fit.get_center(center);
-        calibrator::m_calibration_translation = -center;
+        calibrator::m_calibration_translation = -fit_center;
+
+        // Calculate fit points.
+        Eigen::Matrix3d fit_points;
+        fit_points.row(0) = fit_center - fit_radius;
+        fit_points.row(1) = fit_center;
+        fit_points.row(2) = fit_center + fit_radius;
+        calibrator::new_fit(fit_points);
+
+        // Calcuate calibration points.
+        Eigen::Matrix3d calibration_points;
+        for(uint32_t i = 0; i < 3; ++i)
+        {
+            Eigen::Vector3d row = fit_points.row(i).transpose() + calibrator::m_calibration_translation;
+            calibration_points.row(i).noalias() = calibrator::m_calibration_transform * row;
+        }
+        calibrator::new_calibration(calibration_points);
+
+        // Signal new true gravity vector.
+        calibrator::new_truth(true_gravity_vector);
     }
 
     // Signal completion.
