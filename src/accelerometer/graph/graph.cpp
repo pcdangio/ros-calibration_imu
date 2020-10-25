@@ -64,7 +64,9 @@ graph::graph()
 
     // Set up Y axis.
     QtCharts::QValueAxis* axis_y = new QtCharts::QValueAxis();
-    axis_y->setRange(-15, 15);
+    axis_y->setRange(-12, 12);
+    axis_y->setTickCount(9);
+    axis_y->setMinorTickCount(2);
     axis_y->setTitleText("m/s^2");
     graph::m_chart->addAxis(axis_y, Qt::AlignLeft);
     graph::m_series_measurement->attachAxis(axis_y);
