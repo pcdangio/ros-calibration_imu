@@ -70,10 +70,7 @@ private:
     std::atomic<bool> m_running;
 
     // CALIBRATION RESULTS
-    /// \brief The calculated calibration 3x3 transformation matrix.
-    Eigen::Matrix3d m_calibration_transform;
-    /// \brief The calculated calibration 3x1 translation vector (T).
-    Eigen::Vector3d m_calibration_translation;
+    Eigen::Matrix4d m_calibration;
 };
 
 }
