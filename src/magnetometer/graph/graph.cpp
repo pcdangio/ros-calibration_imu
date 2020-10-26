@@ -164,21 +164,22 @@ void graph::update_calibration_plots(bool calibration_success)
 
         // Draw calibrated points.
         // Get calibration.
-        Eigen::Matrix3d transform;
-        Eigen::Vector3d translation;
-        graph::m_calibrator->get_calibration(transform, translation);
+        Eigen::Matrix4d calibration;
+        graph::m_calibrator->get_calibration(calibration);
         // Iterate through uncalibrated points to apply calibration and draw into series.
         QtDataVisualization::QScatterDataArray* calibrated_points = new QtDataVisualization::QScatterDataArray();
         uint32_t n_points = graph::m_data_interface->n_points();
-        Eigen::Vector3d p_u, p_c;
+        Eigen::Vector3d p;
+        Eigen::Vector4d p_u, p_c;
+        p_u(3) = 1;
         for(uint32_t i = 0; i < n_points; ++i)
         {
             // Grab point.
-            graph::m_data_interface->get_point(i, p_u);
+            graph::m_data_interface->get_point(i, p);
+            p_u.block(0, 0, 3, 1) = p;
             // Calibrate point.
-            p_u += translation;
-            p_c.noalias() = transform * p_u;
-            // Scale point.
+            p_c.noalias() = calibration * p_u;
+            // Scale calibrated point.
             p_c *= graph::m_field_scale;
             // Add calibrated point to series.
             calibrated_points->append(QVector3D(p_c(0), p_c(2), p_c(1)));

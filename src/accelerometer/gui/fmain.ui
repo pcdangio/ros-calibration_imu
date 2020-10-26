@@ -247,7 +247,11 @@
           </widget>
          </item>
          <item>
-          <widget class="QPlainTextEdit" name="textedit_calibration"/>
+          <widget class="QPlainTextEdit" name="textedit_calibration">
+           <property name="lineWrapMode">
+            <enum>QPlainTextEdit::NoWrap</enum>
+           </property>
+          </widget>
          </item>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout">

@@ -40,9 +40,8 @@ public:
     /// \param rotation The ellipsoid rotation vector to capture the fit into.
     void get_fit(Eigen::Vector3d& center, Eigen::Vector3d& radius, Eigen::Vector3d& rotation);
     /// \brief Gets the calculated calibration.
-    /// \param transform The calibration's 3x3 transformation matrix.
-    /// \param translation The calibration's 3x1 translation vector.
-    void get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& translation);
+    /// \param calibration The calibration as a homoegeneous transformation matrix.
+    void get_calibration(Eigen::Matrix4d& calibration);
 
     // CALIBRATION SAVING
     /// \brief Prints the calibration as a string.
@@ -92,10 +91,8 @@ private:
     Eigen::Vector3d m_fit_rotation;
 
     // CALIBRATION RESULTS
-    /// \brief The calculated calibration 3x3 transformation matrix.
-    Eigen::Matrix3d m_calibration_transform;
-    /// \brief The calculated calibration 3x1 translation vector (T).
-    Eigen::Vector3d m_calibration_translation;
+    /// \brief The calculated calibration as a homogeneous transformation matrix.
+    Eigen::Matrix4d m_calibration;
 };
 
 }

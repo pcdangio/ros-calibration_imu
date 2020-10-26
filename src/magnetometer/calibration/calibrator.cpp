@@ -27,8 +27,7 @@ calibrator::calibrator(std::shared_ptr<magnetometer::data_interface>& data_inter
     calibrator::m_fit_rotation.setZero();
 
     // Initialize calibration.
-    calibrator::m_calibration_transform.setIdentity();
-    calibrator::m_calibration_translation.setZero();
+    calibrator::m_calibration.setIdentity();
 
     // Initialize thread.
     calibrator::m_running = false;
@@ -56,8 +55,7 @@ bool calibrator::start(double true_field_strength)
         calibrator::m_fit_rotation.setZero();
 
         // Reset calibration.
-        calibrator::m_calibration_transform.setIdentity();
-        calibrator::m_calibration_translation.setZero();
+        calibrator::m_calibration.setIdentity();
 
         // Start optimization thread to generate fit.
         calibrator::m_thread = boost::thread(&calibrator::thread_worker, this);
@@ -77,27 +75,19 @@ void calibrator::get_fit(Eigen::Vector3d& center, Eigen::Vector3d& radius, Eigen
     radius = calibrator::m_fit_radius;
     rotation = calibrator::m_fit_rotation;
 }
-void calibrator::get_calibration(Eigen::Matrix3d& transform, Eigen::Vector3d& translation)
+void calibrator::get_calibration(Eigen::Matrix4d& calibration)
 {
-    transform = calibrator::m_calibration_transform;
-    translation = calibrator::m_calibration_translation;
+    calibration = calibrator::m_calibration;
 }
 
 // CALIBRATION SAVING
 std::string calibrator::print_calibration()
 {
-    // Scale the translation component.
-    Eigen::Vector3d scaled_translation = calibrator::m_calibration_translation;
-
     // Write to string.
     std::stringstream output;
     output << "calibration units: tesla (T)" << std::endl << std::endl;
-    output << std::setprecision(6) << std::fixed;
-    output << "transformation:" << std::endl
-           << calibrator::m_calibration_transform << std::endl << std::endl;
-    output << std::setprecision(10)
-           << "translation:" << std::endl
-           << scaled_translation;
+    output << std::setprecision(10) << std::fixed;
+    output << calibrator::m_calibration;
 
     return output.str();
 }
@@ -106,32 +96,20 @@ bool calibrator::save_calibration_json(std::string filepath)
     // Use boost property tree to build up JSON file.
     boost::property_tree::ptree json_file;
 
-    // Populate transformation component.
     // Write as row-stepped array.
-    boost::property_tree::ptree json_transformation;
-    for(uint8_t i = 0; i < 3; ++i)
+    boost::property_tree::ptree json_calibration;
+    for(uint8_t i = 0; i < calibrator::m_calibration.rows(); ++i)
     {
-        for(uint8_t j = 0; j < 3; ++j)
+        for(uint8_t j = 0; j < calibrator::m_calibration.cols(); ++j)
         {
             std::stringstream ss;
-            ss << std::setprecision(6) << std::fixed << calibrator::m_calibration_transform(i,j);
-            json_transformation.push_back(boost::property_tree::ptree::value_type("", ss.str()));
+            ss << std::setprecision(10) << std::fixed << calibrator::m_calibration(i,j);
+            json_calibration.push_back(boost::property_tree::ptree::value_type("", ss.str()));
         }
     }
 
-    // Populate translation component.
-    // Apply scaling.
-    boost::property_tree::ptree json_translation;
-    for(uint8_t i = 0; i < 3; ++i)
-    {
-        std::stringstream ss;
-        ss << std::setprecision(10) << std::fixed << (calibrator::m_calibration_translation(i));
-        json_translation.push_back(boost::property_tree::ptree::value_type("", ss.str()));
-    }
-
-    // Add components to JSON root.
-    json_file.add_child("transformation_matrix", json_transformation);
-    json_file.add_child("translation_vector", json_translation);
+    // Add component to JSON root.
+    json_file.add_child("calibration", json_calibration);
 
     // Write JSON file.
     try
@@ -158,29 +136,17 @@ bool calibrator::save_calibration_yaml(std::string filepath)
     }
 
     // Write transformation component.
-    yaml_file << "transformation: [";
-    yaml_file << std::setprecision(6) << std::fixed;
-    for(uint8_t i = 0; i < 3; ++i)
+    yaml_file << "calibration: [";
+    yaml_file << std::setprecision(10) << std::fixed;
+    for(uint8_t i = 0; i < calibrator::m_calibration.rows(); ++i)
     {
-        for(uint8_t j = 0; j < 3; ++j)
+        for(uint8_t j = 0; j < calibrator::m_calibration.cols(); ++j)
         {
-            yaml_file << calibrator::m_calibration_transform(i,j);
-            if((i+1)*(j+1) < 9)
+            yaml_file << calibrator::m_calibration(i,j);
+            if((i+1)*(j+1) < 16)
             {
                 yaml_file << ", ";
             }
-        }
-    }
-    yaml_file << "]" << std::endl;
-
-    yaml_file << std::setprecision(10);
-    yaml_file << "translation: [";
-    for(uint8_t i = 0; i < 3; ++i)
-    {
-        yaml_file << (calibrator::m_calibration_translation(i));
-        if(i < 2)
-        {
-            yaml_file << ", ";
         }
     }
     yaml_file << "]";
@@ -286,27 +252,35 @@ void calibrator::thread_worker()
         fit.set_radius(calibrator::m_fit_radius);
         fit.set_rotation(calibrator::m_fit_rotation);
 
+        // Calculate offset vector.
+        Eigen::Vector3d center;
+        fit.get_center(center);
+        Eigen::Matrix4d h_offset;
+        h_offset.setIdentity();
+        h_offset.block(0, 3, 3, 1) = -center;
+
         // Calculate scale transform.
         Eigen::Vector3d fit_radius;
         fit.get_radius(fit_radius);
-        Eigen::Matrix3d scale;
-        scale.setIdentity();
-        scale(0,0) = calibrator::m_true_field_strength / fit_radius(0);
-        scale(1,1) = calibrator::m_true_field_strength / fit_radius(1);
-        scale(2,2) = calibrator::m_true_field_strength / fit_radius(2);
+        Eigen::Matrix4d h_scale;
+        h_scale.setIdentity();
+        h_scale(0,0) = calibrator::m_true_field_strength / fit_radius(0);
+        h_scale(1,1) = calibrator::m_true_field_strength / fit_radius(1);
+        h_scale(2,2) = calibrator::m_true_field_strength / fit_radius(2);
 
-        // Get rotation and transpose matrices.
+        // Get rotation and counter-rotation transformations.
         Eigen::Matrix3d rotation, rotation_t;
         fit.get_r(rotation);
         fit.get_rt(rotation_t);
+        // Turn into homogeneous transforms.
+        Eigen::Matrix4d h_rotation, h_rotation_t;
+        h_rotation.setIdentity();
+        h_rotation_t.setIdentity();
+        h_rotation.block(0, 0, 3, 3) = rotation;
+        h_rotation_t.block(0, 0, 3, 3) = rotation_t;
 
-        // Calculate and set transform matrix.
-        calibrator::m_calibration_transform.noalias() = rotation * scale * rotation_t;
-
-        // Set translation vector.
-        Eigen::Vector3d center;
-        fit.get_center(center);
-        calibrator::m_calibration_translation = -center;
+        // Calculate and set calibration transform.
+        calibrator::m_calibration.noalias() = h_rotation * h_scale * h_rotation_t * h_offset;
     }
 
     // Signal completion.
