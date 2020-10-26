@@ -70,7 +70,7 @@ bool calibrator::save_calibration_json(std::string filepath)
         for(uint8_t j = 0; j < calibrator::m_calibration.cols(); ++j)
         {
             std::stringstream ss;
-            ss << std::setprecision(6) << std::fixed << calibrator::m_calibration(i,j);
+            ss << std::setprecision(10) << std::fixed << calibrator::m_calibration(i,j);
             json_calibration.push_back(boost::property_tree::ptree::value_type("", ss.str()));
         }
     }
