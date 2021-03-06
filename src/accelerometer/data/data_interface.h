@@ -6,7 +6,7 @@
 #include <QObject>
 
 #include <ros/ros.h>
-#include <sensor_msgs_ext/acceleration.h>
+#include <sensor_msgs_ext/accelerometer.h>
 
 #include <eigen3/Eigen/Dense>
 
@@ -73,7 +73,7 @@ private:
     ros::Subscriber m_subscriber;
     /// \brief The accelerometer subscriber callback.
     /// \param message The received acceleration message.
-    void subscriber(const sensor_msgs_ext::accelerationConstPtr& message);
+    void subscriber(const sensor_msgs_ext::accelerometerConstPtr& message);
 
     // FLAGS
     /// \brief Indicates if the data_interface is currently collecting data.

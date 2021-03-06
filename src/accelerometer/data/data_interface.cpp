@@ -96,7 +96,7 @@ void data_interface::clear_dataset()
 }
 
 // SUBSCRIBER
-void data_interface::subscriber(const sensor_msgs_ext::accelerationConstPtr& message)
+void data_interface::subscriber(const sensor_msgs_ext::accelerometerConstPtr& message)
 {
     // Check if collecting; subscriber may have been shut down but still going through queue.
     if(data_interface::f_is_collecting)
