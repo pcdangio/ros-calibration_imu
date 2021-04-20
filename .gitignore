@@ -4,4 +4,4 @@
 .vscode/
 
 # Ignore documentation files
-doc/
+doc/html
