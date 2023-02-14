@@ -9,7 +9,6 @@ project(calibration_imu)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   roscpp
-  sensor_msgs_ext
   ifopt
   rosbag)
 
