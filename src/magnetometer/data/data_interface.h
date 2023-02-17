@@ -10,7 +10,7 @@
 #include <eigen3/Eigen/Dense>
 
 #include <ros/ros.h>
-#include <sensor_msgs_ext/magnetometer.h>
+#include <sensor_msgs/MagneticField.h>
 
 /// \brief Includes all software components related to magnetometer interfacing.
 namespace magnetometer
@@ -68,7 +68,7 @@ private:
     /// \brief A subscriber for magnetometer data.
     ros::Subscriber m_subscriber;
     /// \brief The subscriber method for receiving magnetometer data.
-    void subscriber(const sensor_msgs_ext::magnetometerConstPtr& message);
+    void subscriber(const sensor_msgs::MagneticFieldConstPtr& message);
     /// \brief A flag indicating if the data subscriber is enabled.
     bool f_subscriber_enabled;
 

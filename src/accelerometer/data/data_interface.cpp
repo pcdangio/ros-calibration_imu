@@ -96,7 +96,7 @@ void data_interface::clear_dataset()
 }
 
 // SUBSCRIBER
-void data_interface::subscriber(const sensor_msgs_ext::accelerometerConstPtr& message)
+void data_interface::subscriber(const sensor_msgs::ImuConstPtr& message)
 {
     // Check if collecting; subscriber may have been shut down but still going through queue.
     if(data_interface::f_is_collecting)
@@ -106,7 +106,7 @@ void data_interface::subscriber(const sensor_msgs_ext::accelerometerConstPtr& me
         {
             data_interface::m_buffer.pop_front();
         }
-        data_interface::m_buffer.push_back({message->x, message->y, message->z});
+        data_interface::m_buffer.push_back({message->linear_acceleration.x, message->linear_acceleration.y, message->linear_acceleration.z});
 
         // Check if buffer full.
         if(data_interface::m_buffer.size() == data_interface::p_buffer_size)
